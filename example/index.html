@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CBOR-wasm test</title>
+</head>
+<style>
+  body {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  }
+  #result {
+    font-weight: bold;
+  }
+  .error {
+    color: red;
+  }
+</style>
+<script src='https://unpkg.com/node-inspect-extracted@1.0.4/dist/inspect.js'></script>
+<script>
+let d = null
+async function main() {
+  const cbor = await import('../lib/cbor.mjs')
+  d = new cbor.Decoder((er, val) => {
+    const r = document.querySelector('#result')
+    if (er) {
+      r.classList.add('error')
+      r.innerText = er.message
+    } else {
+      r.classList.remove('error')
+      r.innerText = util.inspect(val, {depth: Infinity})
+    }
+  })
+  await d.init()
+}
+main().catch(console.error)
+</script>
+<body>
+  <div>
+    <input type="text" id='input' value='fb3ff3333333333333'>
+    <input type="button" value='decode' onclick="d.write(document.querySelector('#input').value)">
+  </div>
+  <div>
+    Result: <span id='result'></span>
+  </div>
+</body>
+</html>

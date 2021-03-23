@@ -1,0 +1,26 @@
+{
+  "name": "cbor-wasm",
+  "version": "0.0.0",
+  "description": "",
+  "main": "lib/cbor.mjs",
+  "type": "module",
+  "scripts": {
+    "build": "cd src; make wat",
+    "pretest": "npm run build",
+    "test": "node test/test.mjs",
+    "prestart": "npm run build",
+    "start": "light-server -q -s . -o /example/index.html -w 'lib/*,src/* # npm run build'"
+  },
+  "keywords": [],
+  "author": "Joe Hildebrand <joe-github@cursive.net>",
+  "license": "MIT",
+  "devDependencies": {
+    "@cto.af/eslint-config": "^0.0.4",
+    "eslint": "^7.22.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-webassembly": "^1.11.0"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}
