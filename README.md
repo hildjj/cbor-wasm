@@ -8,6 +8,12 @@ I'll release this eventually.  Until then:
 
 `npm install github:hildjj/cbor-wasm#main`
 
+## Required node version
+
+For now, use a modern browser or Node 15.  Node 14 will work with
+`--experimental-wasm-bigint`.  See
+[issue](https://github.com/hildjj/cbor-wasm/issues/2).
+
 ## Design
 
 Inspired by [expat](https://libexpat.github.io/), I wanted to be able to feed
