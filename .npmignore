@@ -19,3 +19,5 @@ src/
 .editorconfig
 .eslintrc.cjs
 example/
+.gitmodules
+test-vectors/

@@ -10,7 +10,6 @@
 const int FAIL = DFAIL;
 const int MAX_DEPTH = DMAX_DEPTH;
 
-#define PRINT(fmt) print(__LINE__, (fmt))
 #define ERROR() { frame->val = __LINE__; goto l_ebad; }
 #define DEEPER() { if (++parser->depth >= DMAX_DEPTH) ERROR() }
 #define min(a, b) (((a)<(b))?(a):(b))
@@ -89,6 +88,8 @@ const int PARSER_SIZE = sizeof(Parser);
   ((frame)->bytes == 0) && \
   ((frame)->val == 0x1f))
 
+#ifdef WASM_PRINT
+#define PRINT(fmt) print(__LINE__, (fmt))
 void print_parser(Parser *parser, int instance) {
   print(-1, instance);
   print(0, parser->state);
@@ -100,6 +101,7 @@ void print_parser(Parser *parser, int instance) {
     print(2 + i, parser->stack[i].val);
   }
 }
+#endif
 
 void init_parser(Parser *parser) {
   parser->state = START;
@@ -198,22 +200,23 @@ int parse(Parser *parser, unsigned char *start, int len) {
               if ((frame->mt == MT_SIMPLE) && (frame->val < 0x20)) {
                 ERROR();
               }
-              if ((unsigned long long)frame->val < 0x18) {
+              if ((uint64_t)frame->val < 0x18) {
                 ERROR();
               }
               break;
             case 2:
-              if ((frame->mt != MT_SIMPLE) && ((unsigned long long)frame->val < 0x100)) {
+              if ((frame->mt != MT_SIMPLE) && ((uint64_t)frame->val < 0x100)) {
                 ERROR();
               }
               break;
             case 4:
-              if ((frame->mt != MT_SIMPLE) && ((unsigned long long)frame->val < 0x10000)) {
+              if ((frame->mt != MT_SIMPLE) && ((uint64_t)frame->val < 0x10000)) {
                 ERROR();
               }
               break;
             case 8:
-              if ((frame->mt != MT_SIMPLE) && ((unsigned long long)(frame->val) < 0x100000000)) {
+              if ((frame->mt != MT_SIMPLE) &&
+                  ((uint64_t)(frame->val) < 0x100000000)) {
                 ERROR();
               }
               break;

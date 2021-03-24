@@ -1,8 +1,12 @@
 #pragma once
 
 typedef long long int64_t;
+typedef unsigned long long uint64_t;
 extern void event(int type, int bytes, int64_t value, int line);
+
+#ifdef WASM_PRINT
 extern void print(int where, int fmt);
+#endif
 
 struct Parser;
 typedef struct Parser Parser;
