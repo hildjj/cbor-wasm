@@ -11,6 +11,7 @@ extern void print(int where, int fmt);
 struct Parser;
 typedef struct Parser Parser;
 extern const int PARSER_SIZE;
+extern const int MAX_DEPTH;
 extern const char* STATES[];
 extern const int FAIL;
 

@@ -59,12 +59,19 @@ extern void event(int type, int bytes, int64_t value, int line);
 struct Parser;
 typedef struct Parser Parser;
 extern const int PARSER_SIZE;
-extern const int FAIL;
+extern const int MAX_DEPTH;  // currently 20
+extern const int FAIL;       // currently 128
 
 // Always call init_parser first
 void init_parser(Parser *parser);
 int parse(Parser *parser, unsigned char *start, int len);
 ```
+
+Note that the WASM code is completely `-nostdlib`, it doesn't call `malloc`,
+so you'll need to be careful about your own memory management in the caller.
+`__heap_base` and `PARSER_SIZE` will be useful to you.  See
+[cbor.mjs](https://github.com/hildjj/cbor-wasm/blob/c0f702f0c02d0f695ac5a7406023a786b91c0c39/lib/cbor.mjs#L137)
+for ideas.
 
 For JS:
 ```js
