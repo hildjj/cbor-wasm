@@ -1,11 +1,12 @@
 {
   "name": "cbor-wasm",
   "version": "0.0.0",
-  "description": "",
+  "description": "CBOR decoder with the hard bits in WASM",
   "main": "lib/cbor.mjs",
   "type": "module",
   "scripts": {
     "build": "cd src; make wat",
+    "lint": "eslint lib/*.mjs test/*.mjs",
     "pretest": "npm run build",
     "test": "node test/test.mjs",
     "prestart": "npm run build",
@@ -13,9 +14,23 @@
     "precoverage": "npm run build",
     "coverage": "c8 -r lcov node test/test.mjs"
   },
-  "keywords": [],
+  "keywords": [
+    "cbor",
+    "decoder",
+    "wasm",
+    "stream",
+    "synchronous",
+    "sync",
+    "rfc8949",
+    "8949"
+  ],
   "author": "Joe Hildebrand <joe-github@cursive.net>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hildjj/cbor-wasm.git"
+  },
+  "homepage": "https://github.com/hildjj/cbor-wasm",
   "devDependencies": {
     "@cto.af/eslint-config": "^0.0.4",
     "c8": "^7.6.0",
