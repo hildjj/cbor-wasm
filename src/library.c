@@ -84,6 +84,11 @@ struct Parser {
 };
 const int PARSER_SIZE = sizeof(Parser);
 
+#define IS_BREAK(frame) (\
+  ((frame)->mt == MT_SIMPLE) && \
+  ((frame)->bytes == 0) && \
+  ((frame)->val == 0x1f))
+
 void print_parser(Parser *parser, int instance) {
   print(-1, instance);
   print(0, parser->state);
@@ -150,25 +155,34 @@ int parse(Parser *parser, unsigned char *start, int len) {
           parser->state = frame->mt;
           break;
         l_until:
-          if (frame->mt == MT_SIMPLE) {
-            // BREAK
-            if (parser->depth < 1) {
-              // Starting with FF
+          switch (frame->mt) {
+            case MT_SIMPLE: // BREAK
+              frame->val = lower;
+              if (parser->depth < 1) {
+                // Starting with FF
+                ERROR();
+              }
+              count++;
+              parser->state = END_EMPTY;
+              Frame *parent = &(parser->stack[parser->depth - 1]);
+              if (parent->left != -1) {
+                // FF in a non-streaming container
+                ERROR();
+              }
+              parent->left = 1;
+              break;
+            case MT_BYTES:
+            case MT_UTF8:
+            case MT_ARRAY:
+            case MT_MAP:
+              // Streaming
+              frame->val = -1;
+              count++;
+              parser->state = frame->mt;
+              break;
+            default:
               ERROR();
-            }
-            count++;
-            parser->state = END_EMPTY;
-            Frame *parent = &(parser->stack[parser->depth - 1]);
-            if (parent->left != -1) {
-              // FF in a non-streaming container
-              ERROR();
-            }
-            parent->left = 1;
-          } else {
-            // Streaming
-            frame->val = -1;
-            count++;
-            parser->state = frame->mt;
+              break;
           }
           break;
       }
@@ -179,6 +193,31 @@ int parse(Parser *parser, unsigned char *start, int len) {
         frame->val <<= 8;
         frame->val += c;
         if (--frame->left == 0) {
+          switch (frame->bytes) {
+            case 1:
+              if ((frame->mt == MT_SIMPLE) && (frame->val < 0x20)) {
+                ERROR();
+              }
+              if ((unsigned long long)frame->val < 0x18) {
+                ERROR();
+              }
+              break;
+            case 2:
+              if ((frame->mt != MT_SIMPLE) && ((unsigned long long)frame->val < 0x100)) {
+                ERROR();
+              }
+              break;
+            case 4:
+              if ((frame->mt != MT_SIMPLE) && ((unsigned long long)frame->val < 0x10000)) {
+                ERROR();
+              }
+              break;
+            case 8:
+              if ((frame->mt != MT_SIMPLE) && ((unsigned long long)(frame->val) < 0x100000000)) {
+                ERROR();
+              }
+              break;
+          }
           parser->state = frame->mt;
         }
         break;
@@ -250,9 +289,9 @@ int parse(Parser *parser, unsigned char *start, int len) {
           Frame *parent = &(parser->stack[parser->depth - 1]);
           if (parent->bytes == -1) {
             // if we're streaming bytes or strings, the children must match
-            if (((parent->mt == UTF8) || (parent->mt == BYTES)) &&
-                (frame->mt != SIMPLE) &&
-                (parent->mt != frame->mt)) {
+            if (((parent->mt == BYTES) || (parent->mt == UTF8)) &&
+                ((!IS_BREAK(frame) && (parent->mt != frame->mt)) ||
+                 (frame->bytes == -1))) { // no nested streams
               ERROR();
             }
           }

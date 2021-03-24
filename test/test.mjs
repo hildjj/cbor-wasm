@@ -54,19 +54,41 @@ async function main() {
   // this is a hack to look at the current parser state.  it must
   // be checked after write() returns, when you know a single complete
   // item has been written.
-  const parser_state = new Int32Array(d.mod.memory.buffer, d.parser, 8)
+  const parser_state = new Int32Array(d.mod.memory.buffer, d.parser, 2)
 
   function parse(str) {
     res = NONE
-    d.write(str)
+    const sz = d.write(str)
     if (res === NONE) {
       throw new Error(`DID NOT FINISH: "${str}"`)
+    }
+    if (sz !== (str.length / 2)) {
+      throw new Error('Unused data')
     }
     // make sure we don't have to call reset() after every item.
     assert.equal(parser_state[0], 8) // START
     assert.equal(parser_state[1], 0)
 
     return res
+  }
+
+  function parse_fail(str) {
+    try {
+      res = NONE
+      const sz = d.write(str)
+      if (sz !== (str.length / 2)) {
+        return true
+      }
+      if (res !== NONE) {
+        return false
+      }
+    } catch (ignored) {
+      return true
+    } finally {
+      d.reset()
+    }
+    // e.g. incomplete input
+    return true
   }
 
   let ok = 0
@@ -97,7 +119,7 @@ async function main() {
         "___TYPE___": "number",
         "___VALUE___": "$1"
       }
-  `)
+`)
     vectors = JSON.parse(txt, (key, value) => {
       if (!value) {
         return value
@@ -166,6 +188,36 @@ async function main() {
       d.reset()
     }
   }
+
+  const fail = new URL('../test-vectors/fail.json', import.meta.url)
+  let fails = []
+  try {
+    const txt = await fs.promises.readFile(fail, 'utf8')
+    fails = JSON.parse(txt)
+  } catch (e) {
+    console.log(`not ok ${notOk++}
+  ---
+    Run "git submodule update --init"
+    ${util.inspect(e).replace(/\n/g, '\n    ')}
+  ...
+      `)
+  }
+
+  for (const {hex} of fails) {
+    try {
+      total++
+      assert(parse_fail(hex), hex)
+      console.log(`ok ${ok++} ${hex}`)
+    } catch (e) {
+      console.log(`not ok ${notOk++} ${hex}
+  ---
+    ${util.inspect(e).replace(/\n/g, '\n    ')}
+  ...
+      `)
+      d.reset()
+    }
+  }
+
   console.log(`
 ${notOk}..${total}
 # tests ${total}
