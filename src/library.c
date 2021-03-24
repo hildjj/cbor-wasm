@@ -215,7 +215,8 @@ int parse(Parser *parser, unsigned char *start, int len) {
       case ARRAY:
       case MAP:
         event(frame->mt, frame->bytes, frame->val, __LINE__);
-        frame->bytes = frame->left = frame->val << (frame->mt - ARRAY);
+        frame->bytes = frame->left =
+          (frame->val == -1) ? -1 : frame->val << (frame->mt - ARRAY);
         frame->val = 0;
         if (frame->left == 0) {
           parser->state = END_EMPTY;
@@ -249,7 +250,8 @@ int parse(Parser *parser, unsigned char *start, int len) {
           Frame *parent = &(parser->stack[parser->depth - 1]);
           if (parent->bytes == -1) {
             // if we're streaming bytes or strings, the children must match
-            if (((frame->mt == UTF8) || (frame->mt == BYTES)) &&
+            if (((parent->mt == UTF8) || (parent->mt == BYTES)) &&
+                (frame->mt != SIMPLE) &&
                 (parent->mt != frame->mt)) {
               ERROR();
             }
