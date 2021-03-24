@@ -9,13 +9,16 @@
     "pretest": "npm run build",
     "test": "node test/test.mjs",
     "prestart": "npm run build",
-    "start": "light-server -q -s . -o /example/index.html -w 'lib/*,src/* # npm run build'"
+    "start": "light-server -q -s . -o /example/index.html -w 'lib/*,src/* # npm run build'",
+    "precoverage": "npm run build",
+    "coverage": "c8 -r lcov node test/test.mjs"
   },
   "keywords": [],
   "author": "Joe Hildebrand <joe-github@cursive.net>",
   "license": "MIT",
   "devDependencies": {
     "@cto.af/eslint-config": "^0.0.4",
+    "c8": "^7.6.0",
     "eslint": "^7.22.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-webassembly": "^1.11.0"

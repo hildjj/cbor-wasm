@@ -29,7 +29,11 @@ const cases = [
   ['fbfff0000000000000', -Infinity],
   ['fb8000000000000000', -0],
   ['7f657374726561ff', 'strea'],
-  ['9f00ff', [0]]
+  ['9f00ff', [0]],
+  ['5fff', new Uint8Array(0)],
+  ['5f41004101ff', new Uint8Array([0, 1])],
+  ['bf00010203ff', new Map([[0, 1], [2, 3]])],
+  ['f6', null]
 ]
 const NONE = Symbol('NONE')
 
