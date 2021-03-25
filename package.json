@@ -5,7 +5,7 @@
   "main": "lib/cbor.mjs",
   "type": "module",
   "scripts": {
-    "build": "cd src; make wat",
+    "build": "cd src; make",
     "lint": "eslint lib/*.mjs test/*.mjs",
     "pretest": "npm run build",
     "test": "node test/test.mjs",

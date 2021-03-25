@@ -1,6 +1,5 @@
 #include "library.h"
 
-#pragma GCC diagnostic ignored "-Winitializer-overrides"
 #pragma GCC diagnostic ignored "-Wgnu-label-as-value"
 #pragma GCC diagnostic ignored "-Wgnu-designator"
 
@@ -154,7 +153,7 @@ int parse(Parser *parser, unsigned char *start, int len) {
         l_int:
           frame->val = lower;
           count++;
-          parser->state = frame->mt;
+          parser->state = (States)frame->mt;
           break;
         l_until:
           switch (frame->mt) {
@@ -180,7 +179,7 @@ int parse(Parser *parser, unsigned char *start, int len) {
               // Streaming
               frame->val = -1;
               count++;
-              parser->state = frame->mt;
+              parser->state = (States)frame->mt;
               break;
             default:
               ERROR();
@@ -221,7 +220,7 @@ int parse(Parser *parser, unsigned char *start, int len) {
               }
               break;
           }
-          parser->state = frame->mt;
+          parser->state = (States)frame->mt;
         }
         break;
       case POS:

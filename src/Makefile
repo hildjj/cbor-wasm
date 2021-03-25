@@ -6,7 +6,7 @@ OPTIMIZE = -Os -flto -Wl,--strip-all -Wl,--lto-O3 -Wl,-O3
 CLI = cbor-cli
 
 .PHONY: all
-all: wat $(CLI)
+all: $(OUTPUT) $(CLI)
 
 $(CLI): *.c *.h Makefile
 	$(CLANG) -fdiagnostics-absolute-paths -W -Wall -Wextra -pedantic -o $(CLI) -g *.c
