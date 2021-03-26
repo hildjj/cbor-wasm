@@ -54,7 +54,7 @@ async function main() {
   // this is a hack to look at the current parser state.  it must
   // be checked after write() returns, when you know a single complete
   // item has been written.
-  const parser_state = new Int32Array(d.mod.memory.buffer, d.parser, 2)
+  const parser_state = new Int32Array(d.mod.memory.buffer, d.parser + 8, 2)
 
   function parse(str) {
     res = NONE
@@ -97,7 +97,13 @@ async function main() {
   for (const [actual, expected] of cases) {
     try {
       total++
-      assert.deepEqual(parse(actual), expected, actual)
+      const parsed = parse(actual)
+      // Node 12
+      if (Object.is(expected, NaN)) {
+        assert(Object.is(parsed, NaN), actual)
+      } else {
+        assert.deepEqual(parsed, expected, actual)
+      }
       console.log(`ok ${ok++} ${actual}`)
     } catch (e) {
       console.log(`not ok ${notOk++} ${actual}
@@ -160,23 +166,31 @@ async function main() {
           hex
         )
       }
-      if ((diagnostic != null) && (![
-        // real diagnose
-        'c074323031332d30332d32315432303a30343a30305a',
-        'd74401020304',
-        'd818456449455446',
-        'd82076687474703a2f2f7777772e6578616d706c652e636f6d',
-        '40',
-        '4401020304',
-        'a201020304',
-        '5f42010243030405ff'
-      ].includes(hex))) {
-        skip = false
-        assert.deepEqual(
-          util.inspect(parse(hex), {colors: false, depth: Infinity}),
-          diagnostic,
-          hex
-        )
+      if (diagnostic != null) {
+        if (![
+          // real diagnose
+          'c074323031332d30332d32315432303a30343a30305a',
+          'd74401020304',
+          'd818456449455446',
+          'd82076687474703a2f2f7777772e6578616d706c652e636f6d',
+          '40',
+          '4401020304',
+          'a201020304',
+          '5f42010243030405ff'
+        ].includes(hex)) {
+          skip = false
+          assert.deepEqual(
+            util.inspect(parse(hex), {colors: false, depth: Infinity}),
+            diagnostic,
+            hex
+          )
+        } else {
+          assert.notDeepEqual(
+            util.inspect(parse(hex), {colors: false, depth: Infinity}),
+            diagnostic,
+            hex
+          )
+        }
       }
       console.log(`${skip ? 'skip' : 'ok'} ${ok++} ${hex}`)
     } catch (e) {

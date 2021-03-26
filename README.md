@@ -33,27 +33,28 @@ In JS, we receive those events, then create JS objects that correspond to the ev
 The event method has this signature in C:
 
 ```C
-void event(int type, int bytes, int64_t value, int line)
+void event(int type, int bytes, Phase phase, int line)
 ```
 
-- `type` One of:
-  - On start: the CBOR Major Type of the event
-  - On more-data: negative of the Major Type, with a value not -1n
-  - On end: negative of the Major Type, with a value of -1n
-  - `FAIL` (-128) on errors
-- `bytes` depending on Major Type:
-  - Positive `type`s: the number of additional bytes in the major type argument
-  (0, 1, 2, 4, 8)
-  - -2, -3, -4, -5: the total number of (bytes or items) expected, or -1 for streaming
-  - -6: always 1
-  - Errors: the count of bytes into the input chunk where the error occurred
-- `value`: the associated value
-  - Bytes and strings: the number of bytes from the beginning of the input chunk where the data starts
-  - Arrays and maps: the index of the item in the array
-  - Errors: the line number in library.c that threw the error
-  - All others: the value itself
-  - On final end of the item, -1n
-- `line`: line number in `library.c` where the event was fired.  Useful for debugging, but I'll probably remove it in production builds later.
+- `type` the Major Type of the event, or FAIL
+- `bytes` depending on phase:
+  - BEGIN phase: the number of additional bytes in the major type argument (0, 1, 2, 4, 8)
+  - ITEM phase: the total number of (bytes or items) expected, or -1 for streaming
+  - END phase:
+    - MT 0,1,7: the number of additional bytes in the major type argument (0, 1, 2, 4, 8)
+    - MT 2,3,4,5,6: -1
+  - ERROR phase: the count of bytes into the input chunk where the error occurred
+- `phase` which phase of an item are we in?
+  - BEGIN(0): a container item is beginning.  Total number of items or bytes expected is in `parser->last_val`
+  - ITEM(1): you have received all of the events for item N in a container.  N is in `parser->last_val`
+  - END(2): a full item has been receieved.  For containers, the total number of contained items (including BREAKs) is in `parser->last_val`.  For MT 0,1,7, the value is in `parser->last_val`.
+  - ERROR(3): an error occurred.  Line number from library.c is in `parser->last_val`
+- `line`: line number in `library.c` where the event was fired.  Useful for
+  debugging, but I'll probably remove it in production builds later.
+
+The parser structure is exposed in the library.h file, but the important thing
+is that `parser->last_val` is the first 8 bytes of the structure, and is
+unsigned.
 
 ## API
 
@@ -61,12 +62,11 @@ For the WASM portions:
 
 ```C
 // MUST be supplied by caller in the WASM environment
-extern void event(int type, int bytes, int64_t value, int line);
-struct Parser;
+extern void event(int type, int bytes, Phase phase, int line);
 typedef struct Parser Parser;
 extern const int PARSER_SIZE;
 extern const int MAX_DEPTH;  // currently 20
-extern const int FAIL;       // currently 128
+extern const int FAIL;       // currently -128
 
 // Always call init_parser first
 void init_parser(Parser *parser);

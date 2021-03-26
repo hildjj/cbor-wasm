@@ -5,10 +5,12 @@
 
 #include "library.h"
 
-void event(int type, int bytes, int64_t value, int line) {
+static Parser *parser = NULL;
+
+void event(int type, int bytes, Phase phase, int line) {
   // \x1b[32m-----\x1b[0m
-  printf("-----\ntype: %d\nbytes: %d\nvalue: %lld\nline: %d\n",
-         type, bytes, value, line);
+  printf("-----\ntype: %d\nbytes: %d\nvalue: %lld\nend: %s\nline: %d\n",
+         type, bytes, parser->last_val, PHASES[phase], line);
 }
 
 void print(int where, int fmt) {
@@ -49,21 +51,17 @@ unsigned char *unHex(char *hex, size_t *blen) {
 }
 
 int main(int argc, char **argv) {
-  Parser *p = (Parser*) malloc(PARSER_SIZE);
-  init_parser(p);
+  parser = (Parser*) malloc(PARSER_SIZE);
+  init_parser(parser);
 
   for (int i = 1; i < argc; i++) {
     size_t blen;
     unsigned char *h = unHex(argv[i], &blen);
-    parse(p, h, blen);
+    parse(parser, h, blen);
     free(h);
   }
-  const int state = *(int*)p;
-  if (state == FAIL) {
-    printf("End state: FAIL\n");
-  } else {
-    printf("End state: %s\n", STATES[state]);
-  }
-  printf("End depth: %d\n", *((int*)p + 1));
+  printf("-----\n");
+  printf("End state: %s\n", STATES[parser->state]);
+  printf("End depth: %d\n", parser->depth);
   return 0;
 }

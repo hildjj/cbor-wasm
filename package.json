@@ -39,6 +39,6 @@
     "eslint-plugin-webassembly": "^1.11.0"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=12"
   }
 }
