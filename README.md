@@ -125,3 +125,6 @@ There's a native (non-WASM) version of the C code also compiled as `src/cbor-cli
 TODO: test performance against
 [node-cbor](https://github.com/hildjj/node-cbor/).  My hypothesis is that this
 should be much faster.  See [issue](https://github.com/hildjj/cbor-wasm/issues/2).
+
+[![Tests](https://github.com/hildjj/cbor-wasm/actions/workflows/node.js.yml/badge.svg)](https://github.com/hildjj/cbor-wasm/actions/workflows/node.js.yml)
+[![Coverage Status](https://coveralls.io/repos/github/hildjj/cbor-wasm/badge.svg?branch=split-tests)](https://coveralls.io/github/hildjj/cbor-wasm?branch=split-tests)
