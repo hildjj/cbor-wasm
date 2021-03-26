@@ -9,8 +9,10 @@
     "lint": "eslint lib/*.mjs test/*.mjs",
     "pretest": "npm run build",
     "test": "node test/test.mjs",
+    "pretest:browsers": "npm run build",
+    "test:browsers": "node test/browsers.mjs",
     "pretest:all": "npm run build",
-    "test:all": "nve 12,14,15 node test/test.mjs",
+    "test:all": "nve 12,14,15 node test/test.mjs; node test/browsers.mjs",
     "prestart": "npm run build",
     "start": "light-server -q -s . -o /example/index.html -w 'lib/*,src/* # npm run build'",
     "precoverage": "npm run build",
@@ -40,7 +42,8 @@
     "eslint": "^7.22.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-webassembly": "^1.11.0",
-    "light-server": "^2.9.1"
+    "light-server": "^2.9.1",
+    "playwright": "^1.10.0"
   },
   "engines": {
     "node": ">=12"
