@@ -3,84 +3,17 @@
 #pragma GCC diagnostic ignored "-Wgnu-label-as-value"
 #pragma GCC diagnostic ignored "-Wgnu-designator"
 
-#define DMAX_DEPTH 20
-#define DFAIL -128
-
 const int FAIL = DFAIL;
 const int MAX_DEPTH = DMAX_DEPTH;
-
-#define ERROR() { frame->val = __LINE__; goto l_ebad; }
-#define DEEPER() { if (++parser->depth >= DMAX_DEPTH) ERROR() }
-#define min(a, b) (((a)<(b))?(a):(b))
-
-// Two interoperable enums; States overlaps MT except for FAIL.
-#define FOREACH_MT(FN) \
-  FN(POS), \
-  FN(NEG), \
-  FN(BYTES), \
-  FN(UTF8), \
-  FN(ARRAY), \
-  FN(MAP), \
-  FN(TAG), \
-  FN(SIMPLE)
-
-#define FOREACH_STATE(FN) \
-  FN(START), \
-  FN(COUNT), \
-  FN(CHUNKS), \
-  FN(END), \
-  FN(END_EMPTY)
-
-#define GEN_ENUM(ENUM) ENUM
-#define GEN_ENUM_MT(ENUM) MT_##ENUM
-#define GEN_STR(STR) #STR
-
-typedef enum MT {
-  FOREACH_MT(GEN_ENUM_MT),
-  MT_FAIL = DFAIL
-} MT;
-
-typedef enum States {
-  FOREACH_MT(GEN_ENUM),
-  FOREACH_STATE(GEN_ENUM)
-} States;
-
-const char* STATES[] = {
+const int PARSER_SIZE = DPARSER_SIZE;
+const char *STATES[] = {
   FOREACH_MT(GEN_STR),
   FOREACH_STATE(GEN_STR)
 };
 
-typedef struct Frame {
-  // major type, or FAIL
-  MT mt;
-
-  // pos mt: number of bytes in val (0,1,2,4,8)
-  // -2,-3: number of bytes in chunk, -1 when done
-  // -4,-5: total items, -1 when done
-  // FAIL: offset from `start` where error was detected
-  int bytes;
-
-  // How many items/bytes still need to be read?
-  // -1 for streaming
-  // -2 for empty array/map
-  int left;
-
-  // mt 0,1,7: the value, pre-conversion
-  // mt 2,3: total number of bytes
-  // mt -2,-3: offset from `start` where chunk begins
-  // mt 4,5: total number of items
-  // mt -4,-5: index of item, starting at 0
-  // mt 6: tag number
-  // FAIL: error line number
-  int64_t val;
-} Frame;
-
-struct Parser {
-  States state;
-  int depth;
-  Frame stack[DMAX_DEPTH];
-};
-const int PARSER_SIZE = sizeof(Parser);
+#define ERROR() { frame->val = __LINE__; goto l_ebad; }
+#define DEEPER() { if (++parser->depth >= DMAX_DEPTH) ERROR() }
+#define min(a, b) (((a)<(b))?(a):(b))
 
 #define IS_BREAK(frame) (\
   ((frame)->mt == MT_SIMPLE) && \
@@ -163,13 +96,13 @@ int parse(Parser *parser, unsigned char *start, int len) {
                 // Starting with FF
                 ERROR();
               }
-              count++;
-              parser->state = END_EMPTY;
               Frame *parent = &(parser->stack[parser->depth - 1]);
               if (parent->left != -1) {
                 // FF in a non-streaming container
                 ERROR();
               }
+              count++;
+              parser->state = END_EMPTY;
               parent->left = 1;
               break;
             case MT_BYTES:
@@ -177,7 +110,8 @@ int parse(Parser *parser, unsigned char *start, int len) {
             case MT_ARRAY:
             case MT_MAP:
               // Streaming
-              frame->val = -1;
+              frame->bytes = -1;
+              frame->val = 0;
               count++;
               parser->state = (States)frame->mt;
               break;
@@ -227,37 +161,34 @@ int parse(Parser *parser, unsigned char *start, int len) {
       case NEG:
       case SIMPLE:
         parser->state = END;
-        event(frame->mt, frame->bytes, frame->val, __LINE__);
+        parser->last_val = frame->val;
+        event(frame->mt, frame->bytes, TRUE, __LINE__);
         break;
       case BYTES:
-      case UTF8: {
-        event(frame->mt, frame->bytes, frame->val, __LINE__);
-        frame->bytes = frame->val;
-        frame->val = 0;
-        switch (frame->bytes) {
-          case -1: {
-            // streaming
-            frame->left = -1;
-            parser->state = START;
-            DEEPER();
-            break;
-          }
-          case 0:
-            frame->left = 1;
-            parser->state = END_EMPTY;
-            break;
-          default:
-            frame->left = frame->bytes;
-            parser->state = CHUNKS;
-            break;
+      case UTF8:
+        parser->last_val = frame->val;
+        event(frame->mt, frame->bytes, FALSE, __LINE__);
+        if (frame->bytes == -1) {
+          // streaming
+          frame->left = -1;
+          parser->state = START;
+          DEEPER();
+        } else if (frame->val == 0) {
+          frame->left = 1;
+          parser->state = END_EMPTY;
+        } else {
+          frame->bytes = frame->val;
+          frame->left = frame->bytes;
+          parser->state = CHUNKS;
         }
+        frame->val = 0;
         break;
-      }
       case ARRAY:
       case MAP:
-        event(frame->mt, frame->bytes, frame->val, __LINE__);
+        parser->last_val = frame->val;
+        event(frame->mt, frame->bytes, FALSE, __LINE__);
         frame->bytes = frame->left =
-          (frame->val == -1) ? -1 : frame->val << (frame->mt - ARRAY);
+          (frame->bytes == -1) ? -1 : frame->val << (frame->mt - ARRAY);
         frame->val = 0;
         if (frame->left == 0) {
           parser->state = END_EMPTY;
@@ -267,7 +198,8 @@ int parse(Parser *parser, unsigned char *start, int len) {
         }
         break;
       case TAG:
-        event(frame->mt, frame->bytes, frame->val, __LINE__);
+        parser->last_val = frame->val;
+        event(frame->mt, frame->bytes, FALSE, __LINE__);
         frame->bytes = frame->left = frame->val = 1;
         DEEPER();
         parser->state = START;
@@ -284,7 +216,8 @@ int parse(Parser *parser, unsigned char *start, int len) {
           frame->left = 1;
           parser->state = END_EMPTY;
         }
-        event(-frame->mt, frame->bytes, frame->val, __LINE__);
+        parser->last_val = frame->val;
+        event(-frame->mt, frame->bytes, FALSE, __LINE__);
         break;
       case END:
         if (parser->depth > 0) {
@@ -297,11 +230,13 @@ int parse(Parser *parser, unsigned char *start, int len) {
               ERROR();
             }
           }
-          event(-parent->mt, parent->bytes, parent->val++, __LINE__);
+          parser->last_val = frame->val++;
+          event(-parent->mt, parent->bytes, FALSE, __LINE__);
           if ((parent->left != -1) && (--parent->left == 0)) {
             // we're done with parent
             parser->depth--;
-            event(-parent->mt, -1, -1, __LINE__);
+            parser->last_val = 0;
+            event(-parent->mt, -1, TRUE, __LINE__);
             if (parser->depth < 1) {
               parser->state = START;
               goto l_return;
@@ -316,7 +251,8 @@ int parse(Parser *parser, unsigned char *start, int len) {
         }
         break;
       case END_EMPTY: {
-        event(-frame->mt, -1, -1, __LINE__);
+        parser->last_val = IS_BREAK(frame) ? 0x1f : 0;
+        event(-frame->mt, -1, TRUE, __LINE__);
         if (parser->depth > 0) {
           parser->state = END;
         } else {
@@ -331,8 +267,9 @@ int parse(Parser *parser, unsigned char *start, int len) {
   }
 
   l_ebad:
-    parser->state = FAIL;
-    event(FAIL, count, frame->val, __LINE__);
+    parser->state = START;
+    parser->last_val = frame->val;
+    event(FAIL, count, TRUE, __LINE__);
 
   l_return:
     return count;
