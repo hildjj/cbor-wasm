@@ -7,10 +7,10 @@
 
 static Parser *parser = NULL;
 
-void event(int type, int bytes, bool end, int line) {
+void event(int type, int bytes, Phase phase, int line) {
   // \x1b[32m-----\x1b[0m
   printf("-----\ntype: %d\nbytes: %d\nvalue: %lld\nend: %s\nline: %d\n",
-         type, bytes, parser->last_val, end ? "true" : "false", line);
+         type, bytes, parser->last_val, PHASES[phase], line);
 }
 
 void print(int where, int fmt) {

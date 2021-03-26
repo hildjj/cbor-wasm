@@ -6,10 +6,16 @@
 const int FAIL = DFAIL;
 const int MAX_DEPTH = DMAX_DEPTH;
 const int PARSER_SIZE = DPARSER_SIZE;
+
+#ifdef WASM_CBOR_C
 const char *STATES[] = {
   FOREACH_MT(GEN_STR),
   FOREACH_STATE(GEN_STR)
 };
+const char *PHASES[] = {
+  FOREACH_PHASE(GEN_STR)
+};
+#endif
 
 #define ERROR() { frame->val = __LINE__; goto l_ebad; }
 #define DEEPER() { if (++parser->depth >= DMAX_DEPTH) ERROR() }
@@ -91,6 +97,7 @@ int parse(Parser *parser, unsigned char *start, int len) {
         l_until:
           switch (frame->mt) {
             case MT_SIMPLE: // BREAK
+              frame->bytes = 0;
               frame->val = lower;
               if (parser->depth < 1) {
                 // Starting with FF
@@ -162,12 +169,12 @@ int parse(Parser *parser, unsigned char *start, int len) {
       case SIMPLE:
         parser->state = END;
         parser->last_val = frame->val;
-        event(frame->mt, frame->bytes, TRUE, __LINE__);
+        event(frame->mt, frame->bytes, FINISH, __LINE__);
         break;
       case BYTES:
       case UTF8:
         parser->last_val = frame->val;
-        event(frame->mt, frame->bytes, FALSE, __LINE__);
+        event(frame->mt, frame->bytes, BEGIN, __LINE__);
         if (frame->bytes == -1) {
           // streaming
           frame->left = -1;
@@ -186,7 +193,7 @@ int parse(Parser *parser, unsigned char *start, int len) {
       case ARRAY:
       case MAP:
         parser->last_val = frame->val;
-        event(frame->mt, frame->bytes, FALSE, __LINE__);
+        event(frame->mt, frame->bytes, BEGIN, __LINE__);
         frame->bytes = frame->left =
           (frame->bytes == -1) ? -1 : frame->val << (frame->mt - ARRAY);
         frame->val = 0;
@@ -199,7 +206,7 @@ int parse(Parser *parser, unsigned char *start, int len) {
         break;
       case TAG:
         parser->last_val = frame->val;
-        event(frame->mt, frame->bytes, FALSE, __LINE__);
+        event(frame->mt, frame->bytes, BEGIN, __LINE__);
         frame->bytes = frame->left = frame->val = 1;
         DEEPER();
         parser->state = START;
@@ -217,7 +224,7 @@ int parse(Parser *parser, unsigned char *start, int len) {
           parser->state = END_EMPTY;
         }
         parser->last_val = frame->val;
-        event(-frame->mt, frame->bytes, FALSE, __LINE__);
+        event(frame->mt, frame->bytes, ITEM, __LINE__);
         break;
       case END:
         if (parser->depth > 0) {
@@ -230,13 +237,13 @@ int parse(Parser *parser, unsigned char *start, int len) {
               ERROR();
             }
           }
-          parser->last_val = frame->val++;
-          event(-parent->mt, parent->bytes, FALSE, __LINE__);
+          parser->last_val = parent->val++;
+          event(parent->mt, parent->bytes, ITEM, __LINE__);
           if ((parent->left != -1) && (--parent->left == 0)) {
             // we're done with parent
             parser->depth--;
-            parser->last_val = 0;
-            event(-parent->mt, -1, TRUE, __LINE__);
+            parser->last_val = parent->val;
+            event(parent->mt, -1, FINISH, __LINE__);
             if (parser->depth < 1) {
               parser->state = START;
               goto l_return;
@@ -252,7 +259,7 @@ int parse(Parser *parser, unsigned char *start, int len) {
         break;
       case END_EMPTY: {
         parser->last_val = IS_BREAK(frame) ? 0x1f : 0;
-        event(-frame->mt, -1, TRUE, __LINE__);
+        event(frame->mt, IS_BREAK(frame) ? 0 : -1, FINISH, __LINE__);
         if (parser->depth > 0) {
           parser->state = END;
         } else {
@@ -269,7 +276,7 @@ int parse(Parser *parser, unsigned char *start, int len) {
   l_ebad:
     parser->state = START;
     parser->last_val = frame->val;
-    event(FAIL, count, TRUE, __LINE__);
+    event(FAIL, count, ERROR, __LINE__);
 
   l_return:
     return count;

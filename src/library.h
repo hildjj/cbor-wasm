@@ -2,13 +2,15 @@
 
 typedef long long int64_t;
 typedef unsigned long long uint64_t;
-typedef unsigned char bool;
 
-#define TRUE 1
-#define FALSE 0
 #define DMAX_DEPTH 20
 #define DFAIL -128
 
+#define FOREACH_PHASE(FN) \
+  FN(BEGIN), \
+  FN(ITEM), \
+  FN(FINISH), \
+  FN(ERROR)
 
 // Two interoperable enums; States overlaps MT except for FAIL.
 #define FOREACH_MT(FN) \
@@ -32,6 +34,10 @@ typedef unsigned char bool;
 #define GEN_ENUM_MT(ENUM) MT_##ENUM
 #define GEN_STR(STR) #STR
 
+typedef enum Phase {
+  FOREACH_PHASE(GEN_ENUM)
+} Phase;
+
 typedef enum MT {
   FOREACH_MT(GEN_ENUM_MT),
   MT_FAIL = DFAIL
@@ -42,7 +48,10 @@ typedef enum States {
   FOREACH_STATE(GEN_ENUM)
 } States;
 
+#ifdef WASM_CBOR_C
+extern const char* PHASES[];
 extern const char* STATES[];
+#endif
 
 typedef struct Frame {
   // major type, or FAIL
@@ -77,7 +86,7 @@ struct Parser {
 };
 #define DPARSER_SIZE sizeof(Parser)
 
-extern void event(int type, int bytes, bool end, int line);
+extern void event(int type, int bytes, Phase phase, int line);
 
 #ifdef WASM_PRINT
 extern void print(int where, int fmt);
@@ -86,7 +95,6 @@ extern void print(int where, int fmt);
 typedef struct Parser Parser;
 extern const int PARSER_SIZE;
 extern const int MAX_DEPTH;
-extern const char* STATES[];
 extern const int FAIL;
 
 void init_parser(Parser *parser);

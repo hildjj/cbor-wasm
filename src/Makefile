@@ -9,7 +9,11 @@ CLI = cbor-cli
 all: $(OUTPUT) $(CLI)
 
 $(CLI): *.c *.h Makefile
-	$(CLANG) -fdiagnostics-absolute-paths -W -Wall -Wextra -pedantic -o $(CLI) -g *.c
+	$(CLANG) \
+	-fdiagnostics-absolute-paths \
+	-W -Wall -Wextra -pedantic \
+	-DWASM_CBOR_C \
+	-o $(CLI) -g *.c
 
 $(OUTPUT): $(INPUT) *.h Makefile
 	$(CLANG) \
