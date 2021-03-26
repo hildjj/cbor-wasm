@@ -38,12 +38,12 @@ void event(int type, int bytes, Phase phase, int line)
 
 - `type` the Major Type of the event, or FAIL
 - `bytes` depending on phase:
-  - BEGIN phase: the number of additional bytes in the major type argument (0, 1, 2, 4, 8)
-  - ITEM phase: the total number of (bytes or items) expected, or -1 for streaming
-  - END phase:
+  - BEGIN(0) phase: the number of additional bytes in the major type argument (0, 1, 2, 4, 8)
+  - ITEM(1) phase: the total number of (bytes or items) expected, or -1 for streaming
+  - END(2) phase:
     - MT 0,1,7: the number of additional bytes in the major type argument (0, 1, 2, 4, 8)
     - MT 2,3,4,5,6: -1
-  - ERROR phase: the count of bytes into the input chunk where the error occurred
+  - ERROR(3) phase: the count of bytes into the input chunk where the error occurred
 - `phase` which phase of an item are we in?
   - BEGIN(0): a container item is beginning.  Total number of items or bytes expected is in `parser->last_val`
   - ITEM(1): you have received all of the events for item N in a container.  N is in `parser->last_val`
@@ -125,3 +125,6 @@ There's a native (non-WASM) version of the C code also compiled as `src/cbor-cli
 TODO: test performance against
 [node-cbor](https://github.com/hildjj/node-cbor/).  My hypothesis is that this
 should be much faster.  See [issue](https://github.com/hildjj/cbor-wasm/issues/2).
+
+[![Tests](https://github.com/hildjj/cbor-wasm/actions/workflows/node.js.yml/badge.svg)](https://github.com/hildjj/cbor-wasm/actions/workflows/node.js.yml)
+[![Coverage Status](https://coveralls.io/repos/github/hildjj/cbor-wasm/badge.svg?branch=split-tests)](https://coveralls.io/github/hildjj/cbor-wasm?branch=split-tests)
