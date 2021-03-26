@@ -9,6 +9,8 @@
     "lint": "eslint lib/*.mjs test/*.mjs",
     "pretest": "npm run build",
     "test": "node test/test.mjs",
+    "pretest:all": "npm run build",
+    "test:all": "nve 12,14,15 node test/test.mjs",
     "prestart": "npm run build",
     "start": "light-server -q -s . -o /example/index.html -w 'lib/*,src/* # npm run build'",
     "precoverage": "npm run build",
