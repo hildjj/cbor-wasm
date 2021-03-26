@@ -18,6 +18,7 @@ function exec(cmd, args) {
       .on('error', reject)
       .on('exit', code => {
         if (code !== 0) {
+          console.error(`FAIL ${args} code:${code}`)
           result.fail = true
         }
         resolve(result)
@@ -50,6 +51,7 @@ async function main() {
     const {pathname} = new URL(test, import.meta.url)
     const res = await exec(cmd, [...args, pathname])
     if (res.errors === -1) {
+      console.error(`FAIL.  No tests in "${test}"`)
       fail = true
       continue
     }

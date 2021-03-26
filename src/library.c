@@ -281,3 +281,7 @@ int parse(Parser *parser, unsigned char *start, int len) {
   l_return:
     return count;
 }
+
+double float64(uint64_t *u) {
+  return *(double*)u;
+}
