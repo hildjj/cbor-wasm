@@ -40,7 +40,7 @@ jobs:
           run_install: |
             - args: [-D, c8]
       - name: Test ${{ matrix.node-version }}
-        run: npm run coverage
+        run: npm run coverage:ci
       - name: Coveralls Parallel
         uses: coverallsapp/github-action@master
         with:

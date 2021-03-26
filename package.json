@@ -14,7 +14,8 @@
     "prestart": "npm run build",
     "start": "light-server -q -s . -o /example/index.html -w 'lib/*,src/* # npm run build'",
     "precoverage": "npm run build",
-    "coverage": "c8 -r lcov node test/test.mjs"
+    "coverage": "c8 -r lcov node test/test.mjs",
+    "coverage:ci": "c8 -r lcov node test/test.mjs"
   },
   "keywords": [
     "cbor",
