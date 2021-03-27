@@ -2,6 +2,24 @@ import {TestParser, Runner} from './utils.mjs'
 import {Decoder, Tag} from '../lib/cbor.mjs'
 import assert from 'assert'
 
+function is(parsed, expected, actual) {
+  assert(Object.is(parsed, expected), actual)
+}
+
+function near(parsed, expected, actual) {
+  // see: https://floating-point-gui.de/errors/comparison/
+  const absP = Math.abs(parsed)
+  const absE = Math.abs(expected)
+  const diff = Math.abs(parsed - expected)
+
+  assert(
+    (parsed === expected) ||
+    ((absP + absE < Number.EPSILON) && (diff < Number.EPSILON)) ||
+    (diff / Math.min(absP + absE, Number.MAX_VALUE) < 1e-8),
+    actual
+  )
+}
+
 const cases = [
   ['00', 0],
   ['01', 1],
@@ -29,7 +47,7 @@ const cases = [
   ['fb0000000000000001', Math.pow(2, -1074)],
   ['fb0000000000000000', 0],
   ['fb8000000000000000', -0],
-  ['fb7ff8000000000000', NaN],
+  ['fb7ff8000000000000', NaN, is],
   ['fb7ff0000000000000', Infinity],
   ['fbfff0000000000000', -Infinity],
   ['7f657374726561ff', 'strea'],
@@ -37,19 +55,32 @@ const cases = [
   ['5fff', new Uint8Array(0)],
   ['5f41004101ff', new Uint8Array([0, 1])],
   ['bf00010203ff', new Map([[0, 1], [2, 3]])],
-  ['f6', null]
+  ['f6', null],
+  ['f90000', 0],
+  ['f98000', -0],
+  ['f97c00', Infinity],
+  ['f9fc00', -Infinity],
+  ['f97e00', NaN, is],
+  ['f90001', 0.000000059604645, near],
+  ['f903ff', 0.000060975552, near],
+  ['f90400', 0.00006103515625],
+  ['f97bff', 65504],
+  ['f93bff', 0.99951172, near],
+  ['f93c00', 1],
+  ['f93c01', 1.00097656, near],
+  ['f93555', 0.33325195, near],
+  ['f9c000', -2]
 ]
 
 async function main() {
   const parser = new TestParser()
   await parser.init()
   const runner = new Runner()
-  for (const [actual, expected] of cases) {
+  for (const [actual, expected, predicate] of cases) {
     runner.run(() => {
       const parsed = parser.parse(actual)
-      // Node 12
-      if (Object.is(expected, NaN)) {
-        assert(Object.is(parsed, NaN), actual)
+      if (predicate) {
+        predicate(parsed, expected, actual)
       } else {
         assert.deepEqual(parsed, expected, actual)
       }

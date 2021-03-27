@@ -301,6 +301,7 @@ double float16(short* inp) {
   // 0xfc000 is (1023 - 15) << 10 (the biases)
   // 42 is 52bits of integer, and we had 10 to start with
   unsigned long long bits =
-      (sign << 48) | ((exp + 0xfc000) << 42) | (mant << 42);
+      (sign << 48) | (((exp + 0xfc000) | mant) << 42);
+
   return *(double*)&bits;
 }
