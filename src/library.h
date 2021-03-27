@@ -6,47 +6,24 @@ typedef unsigned long long uint64_t;
 #define DMAX_DEPTH 20
 #define DFAIL -128
 
-#define FOREACH_PHASE(FN) \
-  FN(BEGIN), \
-  FN(ITEM), \
-  FN(FINISH), \
-  FN(ERROR)
+#define FOREACH_PHASE(FN) FN(BEGIN), FN(ITEM), FN(FINISH), FN(ERROR)
 
 // Two interoperable enums; States overlaps MT except for FAIL.
 #define FOREACH_MT(FN) \
-  FN(POS), \
-  FN(NEG), \
-  FN(BYTES), \
-  FN(UTF8), \
-  FN(ARRAY), \
-  FN(MAP), \
-  FN(TAG), \
-  FN(SIMPLE)
+  FN(POS), FN(NEG), FN(BYTES), FN(UTF8), FN(ARRAY), FN(MAP), FN(TAG), FN(SIMPLE)
 
 #define FOREACH_STATE(FN) \
-  FN(START), \
-  FN(COUNT), \
-  FN(CHUNKS), \
-  FN(END), \
-  FN(END_EMPTY)
+  FN(START), FN(COUNT), FN(CHUNKS), FN(END), FN(END_EMPTY)
 
 #define GEN_ENUM(ENUM) ENUM
 #define GEN_ENUM_MT(ENUM) MT_##ENUM
 #define GEN_STR(STR) #STR
 
-typedef enum Phase {
-  FOREACH_PHASE(GEN_ENUM)
-} Phase;
+typedef enum Phase { FOREACH_PHASE(GEN_ENUM) } Phase;
 
-typedef enum MT {
-  FOREACH_MT(GEN_ENUM_MT),
-  MT_FAIL = DFAIL
-} MT;
+typedef enum MT { FOREACH_MT(GEN_ENUM_MT), MT_FAIL = DFAIL } MT;
 
-typedef enum States {
-  FOREACH_MT(GEN_ENUM),
-  FOREACH_STATE(GEN_ENUM)
-} States;
+typedef enum States { FOREACH_MT(GEN_ENUM), FOREACH_STATE(GEN_ENUM) } States;
 
 #ifdef WASM_CBOR_C
 extern const char* PHASES[];
@@ -97,6 +74,6 @@ extern const int PARSER_SIZE;
 extern const int MAX_DEPTH;
 extern const int FAIL;
 
-void init_parser(Parser *parser);
-int parse(Parser *parser, unsigned char *start, int len);
-double float64(uint64_t *u);
+void init_parser(Parser* parser);
+int parse(Parser* parser, unsigned char* start, int len);
+double float64(uint64_t* u);
