@@ -7,7 +7,7 @@ typedef unsigned long long uint64_t;
 #define DFAIL -128
 
 #define FOREACH_PHASE(FN) \
-  FN(BEGIN), FN(BEFORE_ITEM), FN(AFTER_ITEM), FN(FINISH), FN(ERROR)
+  FN(BEGIN), FN(BETWEEN_ITEMS), FN(AFTER_ITEM), FN(FINISH), FN(ERROR)
 
 // Two interoperable enums; States overlaps MT except for FAIL.
 #define FOREACH_MT(FN) \

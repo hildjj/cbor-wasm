@@ -14,3 +14,4 @@ yarn-error.log
 *.dSYM/
 src/cbor-cli
 src/library.wat
+d.js

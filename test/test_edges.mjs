@@ -1,9 +1,10 @@
 import {Runner} from './utils.mjs'
-import {Decoder} from '../lib/cbor.mjs'
+import {Decoder, Diagnose} from '../lib/cbor.mjs'
 import assert from 'assert'
 
 const BUA = globalThis.BigUint64Array
 delete globalThis.BigUint64Array
+const NONE = Symbol('NONE')
 
 async function main() {
   const runner = new Runner()
@@ -33,6 +34,51 @@ async function main() {
   await f.init()
   // console.log + verbose
   f.write('8180')
+
+  let der = NONE
+  let dx = ''
+  const diag = new Diagnose({
+    callback(er, x) {
+      if (er) {
+        der = er
+      } else {
+        dx += x
+      }
+    },
+    verbose: true
+  })
+  await diag.init()
+  for (const [hex, expected] of [
+    ['818120', '[[-1]]'],
+    ['1b0020000000000000', '9007199254740992'],
+    ['3b0020000000000000', '-9007199254740993'],
+    ['7fff', '(_ BREAK)'],
+    ['7f6162ff', '(_ "b", BREAK)'],
+    ['7f6162626364ff', '(_ "b", "cd", BREAK)'],
+    ['9fff', '[_ BREAK]'],
+    ['9f00ff', '[_ 0, BREAK]'],
+    ['9f009fffff', '[_ 0, [_ BREAK], BREAK]'],
+    ['bfff', '{_ BREAK}'],
+    ['bf009fffff', '{_ 0: [_ BREAK], BREAK}'],
+    ['f4', 'false'],
+    ['f5', 'true'],
+    ['f6', 'null'],
+    ['f98000', '-0_1']
+  ]) {
+    // eslint-disable-next-line no-loop-func
+    runner.run(() => {
+      dx = ''
+      diag.write(hex)
+      assert.deepEqual(der, NONE, hex)
+      assert.deepEqual(dx, expected, hex)
+    })
+  }
+  runner.run(() => {
+    dx = ''
+    diag.write('ff')
+    assert(der instanceof Error, 'ff')
+    assert.deepEqual(dx, '', 'ff')
+  })
 
   runner.summary()
 }

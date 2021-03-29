@@ -251,7 +251,7 @@ int parse(Parser* parser, unsigned char* start, int len) {
             }
             parser->state = END;
           } else {
-            event(parent->mt, parent->bytes, BEFORE_ITEM, __LINE__);
+            event(parent->mt, parent->bytes, BETWEEN_ITEMS, __LINE__);
             parser->state = START;
           }
         } else {
@@ -293,6 +293,9 @@ double float16(short* inp) {
   unsigned long long exp = *inp & 0x7C00;
   unsigned long long mant = *inp & 0x03ff;
   if (!exp) {
+    if (!mant) {
+      return sign ? -0.0 : 0.0;
+    }
     return (sign ? -1 : 1) * mant * 0x1p-24;
   }
   if (exp == 0x7c00) {
