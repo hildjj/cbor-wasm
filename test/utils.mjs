@@ -1,5 +1,5 @@
 import assert from 'assert'
-import {Decoder} from '../lib/cbor.mjs'
+import {Decoder, Diagnose} from '../lib/cbor.mjs'
 import util from 'util'
 
 export const NONE = Symbol('NONE')
@@ -7,6 +7,7 @@ export const NONE = Symbol('NONE')
 export class TestParser {
   constructor() {
     this.result = NONE
+    this.str = ''
     const that = this
     this.decoder = new Decoder({
       callback(er, x) {
@@ -18,10 +19,21 @@ export class TestParser {
       },
       verbose: false
     })
+    this.diag = new Diagnose({
+      callback(er, x) {
+        if (er) {
+          throw er
+        } else {
+          that.str += x
+        }
+      },
+      verbose: false
+    })
   }
 
   async init() {
     await this.decoder.init()
+    await this.diag.init()
 
     // this is a hack to look at the current parser state.  it must
     // be checked after write() returns, when you know a single complete
@@ -31,6 +43,19 @@ export class TestParser {
       this.decoder.parser + 8,
       2
     )
+  }
+
+  diagnose(str) {
+    this.str = ''
+    const sz = this.diag.write(str)
+    if (this.str === '') {
+      throw new Error(`DID NOT FINISH: "${str}"`)
+    }
+    if (sz !== (str.length / 2)) {
+      throw new Error('Unused data')
+    }
+
+    return this.str
   }
 
   parse(str) {

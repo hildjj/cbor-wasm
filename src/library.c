@@ -62,8 +62,7 @@ int parse(Parser* parser, unsigned char* start, int len) {
   while (1) {
     unsigned char c = start[count];
     if ((parser->depth < 0) || (parser->depth >= MAX_DEPTH)) {
-      frame->val = __LINE__;
-      goto l_ebad;
+      ERROR();
     }
     frame = &(parser->stack[parser->depth]);
     switch (parser->state) {
@@ -226,7 +225,7 @@ int parse(Parser* parser, unsigned char* start, int len) {
           parser->state = END_EMPTY;
         }
         parser->last_val = frame->val;
-        event(frame->mt, frame->bytes, ITEM, __LINE__);
+        event(frame->mt, frame->bytes, AFTER_ITEM, __LINE__);
         break;
       case END:
         if (parser->depth > 0) {
@@ -240,11 +239,11 @@ int parse(Parser* parser, unsigned char* start, int len) {
             }
           }
           parser->last_val = parent->val++;
-          event(parent->mt, parent->bytes, ITEM, __LINE__);
+          event(parent->mt, parent->bytes, AFTER_ITEM, __LINE__);
           if ((parent->left != -1) && (--parent->left == 0)) {
             // we're done with parent
             parser->depth--;
-            parser->last_val = parent->val;
+            parser->last_val = parser->last_val = IS_BREAK(frame) ? 0x1f : 0;;
             event(parent->mt, -1, FINISH, __LINE__);
             if (parser->depth < 1) {
               parser->state = START;
@@ -252,6 +251,7 @@ int parse(Parser* parser, unsigned char* start, int len) {
             }
             parser->state = END;
           } else {
+            event(parent->mt, parent->bytes, BEFORE_ITEM, __LINE__);
             parser->state = START;
           }
         } else {

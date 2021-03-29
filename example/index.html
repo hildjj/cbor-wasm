@@ -10,7 +10,7 @@
   body {
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
   }
-  #result {
+  .computed {
     font-weight: bold;
   }
   .error {
@@ -18,11 +18,10 @@
   }
 </style>
 <script src='https://unpkg.com/node-inspect-extracted@1.0.4/dist/inspect.js'></script>
-<script>
-let d = null
+<script type='module'>
+import {Decoder, Diagnose} from '../lib/cbor.mjs'
 async function main() {
-  const cbor = await import('../lib/cbor.mjs')
-  d = new cbor.Decoder((er, val) => {
+  const d = new Decoder((er, val) => {
     const r = document.querySelector('#result')
     if (er) {
       r.classList.add('error')
@@ -32,17 +31,41 @@ async function main() {
       r.innerText = util.inspect(val, {depth: Infinity})
     }
   })
+  const diag = new Diagnose((er, val) => {
+    const r = document.querySelector('#diag')
+    if (er) {
+      r.classList.add('error')
+      r.innerText = er.message
+    } else {
+      r.classList.remove('error')
+      r.innerText += val
+    }
+  })
   await d.init()
+  await diag.init()
+
+  const button = document.querySelector('#decode')
+  button.onclick = () => {
+    document.querySelector('#result').innerText = ''
+    document.querySelector('#diag').innerText = ''
+    const txt = document.querySelector('#input').value
+    d.write(txt)
+    diag.write(txt)
+  }
+  button.disabled = false
 }
-main().catch(console.error)
+window.addEventListener('load', main)
 </script>
 <body>
   <div>
-    <input type="text" id='input' value='fb3ff3333333333333'>
-    <input type="button" value='decode' onclick="d.write(document.querySelector('#input').value)">
+    <input type=text id=input value='fb3ff3333333333333'>
+    <input type=button id=decode value=decode disabled=true autocomplete=off>
   </div>
   <div>
-    Result: <span id='result'></span>
+    Result: <span id=result class=computed></span>
+  </div>
+  <div>
+    Diagnostic: <span id=diag class=computed></span>
   </div>
 </body>
 </html>
