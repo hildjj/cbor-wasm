@@ -165,6 +165,17 @@ int parse(Parser* parser, unsigned char* start, int len) {
           parser->state = GOT_VAL;
         }
         break;
+      case GOT_VAL:
+        // we don't get here from BREAK
+        if (parser->depth > 0) {
+          Frame* parent = &(parser->stack[parser->depth - 1]);
+          if (parent->val > 0) {
+            parser->last_val = parent->val;
+            event(parent->mt, parent->bytes, BETWEEN_ITEMS, __LINE__);
+          }
+        }
+        parser->state = (States)frame->mt;
+        break;
       case POS:
       case NEG:
       case SIMPLE:
@@ -269,17 +280,6 @@ int parse(Parser* parser, unsigned char* start, int len) {
         }
         break;
       }
-      case GOT_VAL:
-        // we don't get here from BREAK
-        if (parser->depth > 0) {
-          Frame* parent = &(parser->stack[parser->depth - 1]);
-          if (parent->val > 0) {
-            parser->last_val = parent->val;
-            event(parent->mt, parent->bytes, BETWEEN_ITEMS, __LINE__);
-          }
-        }
-        parser->state = (States)frame->mt;
-        break;
       default:
         ERROR();
     }
