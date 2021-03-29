@@ -59,7 +59,6 @@ async function main() {
       runner.run(() => {
         assert.deepEqual(
           parser.diagnose(hex)
-            .replace(', BREAK', '')
             .replace(/_\d/g, ''),
           diagnostic,
           hex
