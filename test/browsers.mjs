@@ -7,7 +7,7 @@ function startServer() {
     const {pathname} = new URL('..', import.meta.url)
     const child = child_process.spawn(
       'npx',
-      [ 'light-server', '-q', '-s', pathname ],
+      [ 'light-server', '-p', '4001', '-q', '-s', pathname ],
       { stdio: ['inherit', 'pipe', 'inherit'] }
     )
       .on('error', reject)

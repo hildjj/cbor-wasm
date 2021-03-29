@@ -58,23 +58,13 @@ async function main() {
     if (diagnostic != null) {
       runner.run(() => {
         assert.deepEqual(
-          util.inspect(parser.parse(hex), {colors: false, depth: Infinity}),
+          parser.diagnose(hex)
+            .replace(/_\d/g, ''),
           diagnostic,
           hex
         )
       },
-      hex,
-      [
-        // real diagnose
-        'c074323031332d30332d32315432303a30343a30305a',
-        'd74401020304',
-        'd818456449455446',
-        'd82076687474703a2f2f7777772e6578616d706c652e636f6d',
-        '40',
-        '4401020304',
-        'a201020304',
-        '5f42010243030405ff'
-      ].includes(hex))
+      hex)
     }
   }
 

@@ -62,8 +62,7 @@ int parse(Parser* parser, unsigned char* start, int len) {
   while (1) {
     unsigned char c = start[count];
     if ((parser->depth < 0) || (parser->depth >= MAX_DEPTH)) {
-      frame->val = __LINE__;
-      goto l_ebad;
+      ERROR();
     }
     frame = &(parser->stack[parser->depth]);
     switch (parser->state) {
@@ -93,7 +92,7 @@ int parse(Parser* parser, unsigned char* start, int len) {
       l_int:
         frame->val = lower;
         count++;
-        parser->state = (States)frame->mt;
+        parser->state = GOT_VAL;
         break;
       l_until:
         switch (frame->mt) {
@@ -121,7 +120,7 @@ int parse(Parser* parser, unsigned char* start, int len) {
             frame->bytes = -1;
             frame->val = 0;
             count++;
-            parser->state = (States)frame->mt;
+            parser->state = GOT_VAL;
             break;
           default:
             ERROR();
@@ -163,8 +162,19 @@ int parse(Parser* parser, unsigned char* start, int len) {
               }
               break;
           }
-          parser->state = (States)frame->mt;
+          parser->state = GOT_VAL;
         }
+        break;
+      case GOT_VAL:
+        // we don't get here from BREAK
+        if (parser->depth > 0) {
+          Frame* parent = &(parser->stack[parser->depth - 1]);
+          if (parent->val > 0) {
+            parser->last_val = parent->val;
+            event(parent->mt, parent->bytes, BETWEEN_ITEMS, __LINE__);
+          }
+        }
+        parser->state = (States)frame->mt;
         break;
       case POS:
       case NEG:
@@ -226,7 +236,7 @@ int parse(Parser* parser, unsigned char* start, int len) {
           parser->state = END_EMPTY;
         }
         parser->last_val = frame->val;
-        event(frame->mt, frame->bytes, ITEM, __LINE__);
+        event(frame->mt, frame->bytes, AFTER_ITEM, __LINE__);
         break;
       case END:
         if (parser->depth > 0) {
@@ -240,11 +250,11 @@ int parse(Parser* parser, unsigned char* start, int len) {
             }
           }
           parser->last_val = parent->val++;
-          event(parent->mt, parent->bytes, ITEM, __LINE__);
+          event(parent->mt, parent->bytes, AFTER_ITEM, __LINE__);
           if ((parent->left != -1) && (--parent->left == 0)) {
             // we're done with parent
             parser->depth--;
-            parser->last_val = parent->val;
+            parser->last_val = parser->last_val = IS_BREAK(frame) ? 0x1f : 0;;
             event(parent->mt, -1, FINISH, __LINE__);
             if (parser->depth < 1) {
               parser->state = START;
@@ -293,6 +303,9 @@ double float16(short* inp) {
   unsigned long long exp = *inp & 0x7C00;
   unsigned long long mant = *inp & 0x03ff;
   if (!exp) {
+    if (!mant) {
+      return sign ? -0.0 : 0.0;
+    }
     return (sign ? -1 : 1) * mant * 0x1p-24;
   }
   if (exp == 0x7c00) {

@@ -6,14 +6,15 @@ typedef unsigned long long uint64_t;
 #define DMAX_DEPTH 20
 #define DFAIL -128
 
-#define FOREACH_PHASE(FN) FN(BEGIN), FN(ITEM), FN(FINISH), FN(ERROR)
+#define FOREACH_PHASE(FN) \
+  FN(BEGIN), FN(BETWEEN_ITEMS), FN(AFTER_ITEM), FN(FINISH), FN(ERROR)
 
 // Two interoperable enums; States overlaps MT except for FAIL.
 #define FOREACH_MT(FN) \
   FN(POS), FN(NEG), FN(BYTES), FN(UTF8), FN(ARRAY), FN(MAP), FN(TAG), FN(SIMPLE)
 
 #define FOREACH_STATE(FN) \
-  FN(START), FN(COUNT), FN(CHUNKS), FN(END), FN(END_EMPTY)
+  FN(START), FN(COUNT), FN(GOT_VAL), FN(CHUNKS), FN(END), FN(END_EMPTY)
 
 #define GEN_ENUM(ENUM) ENUM
 #define GEN_ENUM_MT(ENUM) MT_##ENUM

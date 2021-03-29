@@ -39,16 +39,20 @@ void event(int type, int bytes, Phase phase, int line)
 - `type` the Major Type of the event, or FAIL
 - `bytes` depending on phase:
   - BEGIN(0) phase: the number of additional bytes in the major type argument (0, 1, 2, 4, 8)
-  - ITEM(1) phase: the total number of (bytes or items) expected, or -1 for streaming
-  - END(2) phase:
+  - BETWEEN_ITEMS(1) phase: the total number of (bytes or items) expected, or -1 for streaming
+  - AFTER_ITEM(2) phase: the total number of (bytes or items) expected, or -1 for streaming
+  - FINISH(3) phase:
     - MT 0,1,7: the number of additional bytes in the major type argument (0, 1, 2, 4, 8)
-    - MT 2,3,4,5,6: -1
-  - ERROR(3) phase: the count of bytes into the input chunk where the error occurred
+    - MT 2,3,4,5: -1, or 0x1f if streaming
+    - MT 6: -1
+  - ERROR(4) phase: the count of bytes into the input chunk where the error occurred
 - `phase` which phase of an item are we in?
   - BEGIN(0): a container item is beginning.  Total number of items or bytes expected is in `parser->last_val`
-  - ITEM(1): you have received all of the events for item N in a container.  N is in `parser->last_val`
-  - END(2): a full item has been receieved.  For containers, the total number of contained items (including BREAKs) is in `parser->last_val`.  For MT 0,1,7, the value is in `parser->last_val`.
-  - ERROR(3): an error occurred.  Line number from library.c is in `parser->last_val`
+  - BETWEEN_ITEMS(1): In a collection, we are between items, in the place that a comma
+    or colon would need to go
+  - AFTER_ITEM(2): you have received all of the events for item N in a container.  N is in `parser->last_val`
+  - FINISH(3): a full item has been receieved.  For containers, the total number of contained items (including BREAKs) is in `parser->last_val`.  For MT 0,1,7, the value is in `parser->last_val`.
+  - ERROR(4): an error occurred.  Line number from library.c is in `parser->last_val`
 - `line`: line number in `library.c` where the event was fired.  Useful for
   debugging, but I'll probably remove it in production builds later.
 

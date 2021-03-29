@@ -1,5 +1,7 @@
 import {TestParser, Runner} from './utils.mjs'
-import {Decoder, Tag} from '../lib/cbor.mjs'
+import {Tag} from '../lib/cbor.mjs'
+import {fromHex} from '../lib/utils.mjs'
+
 import assert from 'assert'
 
 function is(parsed, expected, actual) {
@@ -36,9 +38,9 @@ const cases = [
   ['a161616461626364', {a: 'abcd'}],
   ['a16461626364a1616100', {abcd: {a: 0}}],
   ['a16461626364820001', {abcd: [0, 1]}],
-  ['491c0000000000000000', Decoder.hex('1c0000000000000000')],
-  ['81491c0000000000000000', [Decoder.hex('1c0000000000000000')]],
-  ['c9491c0000000000000000', new Tag(9, Decoder.hex('1c0000000000000000'))],
+  ['491c0000000000000000', fromHex('1c0000000000000000')],
+  ['81491c0000000000000000', [fromHex('1c0000000000000000')]],
+  ['c9491c0000000000000000', new Tag(9, fromHex('1c0000000000000000'))],
   ['fb3ff3333333333333', 1.2],
   ['fbbff3333333333333', -1.2],
   ['fb3ff0000000000000', 1],
