@@ -131,4 +131,4 @@ TODO: test performance against
 should be much faster.  See [issue](https://github.com/hildjj/cbor-wasm/issues/2).
 
 [![Tests](https://github.com/hildjj/cbor-wasm/actions/workflows/node.js.yml/badge.svg)](https://github.com/hildjj/cbor-wasm/actions/workflows/node.js.yml)
-[![Coverage Status](https://coveralls.io/repos/github/hildjj/cbor-wasm/badge.svg?branch=split-tests)](https://coveralls.io/github/hildjj/cbor-wasm?branch=split-tests)
+[![Coverage Status](https://coveralls.io/repos/github/hildjj/cbor-wasm/badge.svg?branch=main)](https://coveralls.io/github/hildjj/cbor-wasm?branch=main)
