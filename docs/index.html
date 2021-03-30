@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cbor-wasm API docs Home</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+             
+                <a href="index.html">
+                    <h1 class="navbar-item">cbor-wasm</h1>
+                </a>
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    API Documentation
+                </a>
+                
+                 
+                    
+                        <a
+                            class="link user-link "
+                            href="https://github.com/hildjj/cbor-wasm"
+                        >
+                            Github
+                        </a>
+                    
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Decoder.html">Decoder</a></li><li><a href="Diagnose.html">Diagnose</a></li><li><a href="Parser.html">Parser</a></li><li><a href="Simple.html">Simple</a></li><li><a href="Tag.html">Tag</a></li><li><a href="WasmLib.html">WasmLib</a></li></ul><h3>Global</h3><ul><li><a href="global.html#concat">concat</a></li><li><a href="global.html#fromHex">fromHex</a></li><li><a href="global.html#toHex">toHex</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p></p>
+                    <h1>Home</h1>
+                </header>
+                
+
+
+
+    
+
+
+    <h3> </h3>
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    <section>
+        <article><h1>cbor-wasm</h1>
+<p><a href="https://cbor.io/">CBOR</a> decoder with the hard bits in WASM, and the JS-specific parts in JS.</p>
+<h2>Installation</h2>
+<p>I'll release this eventually.  Until then:</p>
+<p><code>npm install github:hildjj/cbor-wasm#main</code></p>
+<h2>Required node version</h2>
+<p>Use a modern browser or Node 12+.</p>
+<h2>Design</h2>
+<p>Inspired by <a href="https://libexpat.github.io/">expat</a>, I wanted to be able to feed
+bytes to a CBOR parser and have a callback called <em>synchronously</em> with all of
+the events relevant to that chunk of data while that parse function is
+executing.  This approach will allow both streaming as well as parsing whole
+CBOR elements without async overhead.</p>
+<p>The events describe the edges of the CBOR structure, beginnings and endings.
+For bytes and strings, you will get multiple chunks when those types are
+spread across chunks.</p>
+<p>In JS, we receive those events, then create JS objects that correspond to the events.</p>
+<h2>Events</h2>
+<p>The event method has this signature in C:</p>
+<pre class="prettyprint source lang-C"><code>void event(int type, int bytes, Phase phase, int line)
+</code></pre>
+<ul>
+<li><code>type</code> the Major Type of the event, or FAIL</li>
+<li><code>bytes</code> depending on phase:
+<ul>
+<li>BEGIN(0) phase: the number of additional bytes in the major type argument (0, 1, 2, 4, 8)</li>
+<li>BETWEEN_ITEMS(1) phase: the total number of (bytes or items) expected, or -1 for streaming</li>
+<li>AFTER_ITEM(2) phase: the total number of (bytes or items) expected, or -1 for streaming</li>
+<li>FINISH(3) phase:
+<ul>
+<li>MT 0,1,7: the number of additional bytes in the major type argument (0, 1, 2, 4, 8)</li>
+<li>MT 2,3,4,5: -1, or 0x1f if streaming</li>
+<li>MT 6: -1</li>
+</ul>
+</li>
+<li>ERROR(4) phase: the count of bytes into the input chunk where the error occurred</li>
+</ul>
+</li>
+<li><code>phase</code> which phase of an item are we in?
+<ul>
+<li>BEGIN(0): a container item is beginning.  Total number of items or bytes expected is in <code>parser-&gt;last_val</code></li>
+<li>BETWEEN_ITEMS(1): In a collection, we are between items, in the place that a comma
+or colon would need to go</li>
+<li>AFTER_ITEM(2): you have received all of the events for item N in a container.  N is in <code>parser-&gt;last_val</code></li>
+<li>FINISH(3): a full item has been receieved.  For containers, the total number of contained items (including BREAKs) is in <code>parser-&gt;last_val</code>.  For MT 0,1,7, the value is in <code>parser-&gt;last_val</code>.</li>
+<li>ERROR(4): an error occurred.  Line number from library.c is in <code>parser-&gt;last_val</code></li>
+</ul>
+</li>
+<li><code>line</code>: line number in <code>library.c</code> where the event was fired.  Useful for
+debugging, but I'll probably remove it in production builds later.</li>
+</ul>
+<p>The parser structure is exposed in the library.h file, but the important thing
+is that <code>parser-&gt;last_val</code> is the first 8 bytes of the structure, and is
+unsigned.</p>
+<h2>API</h2>
+<p>For the WASM portions:</p>
+<pre class="prettyprint source lang-C"><code>// MUST be supplied by caller in the WASM environment
+extern void event(int type, int bytes, Phase phase, int line);
+typedef struct Parser Parser;
+extern const int PARSER_SIZE;
+extern const int MAX_DEPTH;  // currently 20
+extern const int FAIL;       // currently -128
+
+// Always call init_parser first
+void init_parser(Parser *parser);
+int parse(Parser *parser, unsigned char *start, int len);
+</code></pre>
+<p>Note that the WASM code is completely <code>-nostdlib</code>, it doesn't call <code>malloc</code>,
+so you'll need to be careful about your own memory management in the caller.
+<code>__heap_base</code> and <code>PARSER_SIZE</code> will be useful to you.  See
+<a href="https://github.com/hildjj/cbor-wasm/blob/c0f702f0c02d0f695ac5a7406023a786b91c0c39/lib/cbor.mjs#L137">cbor.mjs</a>
+for ideas.</p>
+<p>For JS:</p>
+<pre class="prettyprint source lang-js"><code>import {Decoder, Tag, Simple} from 'cbor-wasm'
+const d = new Decoder((er, obj) => {})
+await d.init()
+d.write(Uint8Array, ?start, ?end)
+</code></pre>
+<p>The function passed in to the Decoder constructor will get called once per
+top-level CBOR object in your input.</p>
+<h2>Development</h2>
+<p>You'll need a late-model version of clang from <a href="https://llvm.org/">llvm</a>.  I'm using version 11.1.0, which I installed with:</p>
+<pre class="prettyprint source lang-sh"><code>brew install llvm
+echo 'export PATH=&quot;/usr/local/opt/llvm/bin:$PATH&quot;' >> ~/.zshrc
+</code></pre>
+<p>Make sure to check out the git submodules, which have the test vectors in them:</p>
+<pre class="prettyprint source lang-sh"><code>git submodule update --init
+</code></pre>
+<p>Then:</p>
+<pre class="prettyprint source lang-sh"><code>npm install
+npm test
+</code></pre>
+<p>To run in the web:</p>
+<pre class="prettyprint source lang-sh"><code>npm start
+</code></pre>
+<p>There's a native (non-WASM) version of the C code also compiled as <code>src/cbor-cli</code> in order to debug.  Debugging WASM code doesn't really work in any of the ways that it is supposed to yet.</p>
+<h2>Performance</h2>
+<p>TODO: test performance against
+<a href="https://github.com/hildjj/node-cbor/">node-cbor</a>.  My hypothesis is that this
+should be much faster.  See <a href="https://github.com/hildjj/cbor-wasm/issues/2">issue</a>.</p>
+<p><a href="https://github.com/hildjj/cbor-wasm/actions/workflows/node.js.yml"><img src="https://github.com/hildjj/cbor-wasm/actions/workflows/node.js.yml/badge.svg" alt="Tests"></a>
+<a href="https://coveralls.io/github/hildjj/cbor-wasm?branch=main"><img src="https://coveralls.io/repos/github/hildjj/cbor-wasm/badge.svg?branch=main" alt="Coverage Status"></a></p></article>
+    </section>
+
+
+
+
+
+
+            </div>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+</body>
+</html>

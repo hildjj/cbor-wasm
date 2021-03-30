@@ -1,4 +1,104 @@
-import {concat, toHex} from './utils.js'
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cbor-wasm API docs decoder.js</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+             
+                <a href="index.html">
+                    <h1 class="navbar-item">cbor-wasm</h1>
+                </a>
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    API Documentation
+                </a>
+                
+                 
+                    
+                        <a
+                            class="link user-link "
+                            href="https://github.com/hildjj/cbor-wasm"
+                        >
+                            Github
+                        </a>
+                    
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Decoder.html">Decoder</a></li><li><a href="Diagnose.html">Diagnose</a></li><li><a href="Parser.html">Parser</a></li><li><a href="Simple.html">Simple</a></li><li><a href="Tag.html">Tag</a></li><li><a href="WasmLib.html">WasmLib</a></li></ul><h3>Global</h3><ul><li><a href="global.html#concat">concat</a></li><li><a href="global.html#fromHex">fromHex</a></li><li><a href="global.html#toHex">toHex</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>decoder.js</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import {concat, toHex} from './utils.js'
 import {Parser, PHASES, MT} from './parser.js'
 
 const BREAK = Symbol('BREAK')
@@ -83,10 +183,10 @@ export class Decoder extends Parser {
     let ret = null
     switch (mt) {
       case MT.POS:
-        ret = (val <= Number.MAX_SAFE_INTEGER) ? Number(val) : val
+        ret = (val &lt;= Number.MAX_SAFE_INTEGER) ? Number(val) : val
         break
       case MT.NEG:
-        ret = (val <= Number.MAX_SAFE_INTEGER) ? -1 - Number(val) : -1n - val
+        ret = (val &lt;= Number.MAX_SAFE_INTEGER) ? -1 - Number(val) : -1n - val
         break
       case MT.BYTES:
         switch (phase) {
@@ -188,12 +288,12 @@ export class Decoder extends Parser {
             }
             if (entries.every((v, i) => (i % 2) || (typeof v === 'string'))) {
               ret = {}
-              for (let i = 0; i < entries.length; i += 2) {
+              for (let i = 0; i &lt; entries.length; i += 2) {
                 ret[entries[i]] = entries[i + 1]
               }
             } else {
               ret = new Map()
-              for (let i = 0; i < entries.length; i += 2) {
+              for (let i = 0; i &lt; entries.length; i += 2) {
                 ret.set(entries[i], entries[i + 1])
               }
             }
@@ -266,3 +366,22 @@ export class Decoder extends Parser {
     }
   }
 }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+</body>
+</html>

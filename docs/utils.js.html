@@ -1,0 +1,260 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cbor-wasm API docs utils.js</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+             
+                <a href="index.html">
+                    <h1 class="navbar-item">cbor-wasm</h1>
+                </a>
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    API Documentation
+                </a>
+                
+                 
+                    
+                        <a
+                            class="link user-link "
+                            href="https://github.com/hildjj/cbor-wasm"
+                        >
+                            Github
+                        </a>
+                    
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Classes</h3><ul><li><a href="Decoder.html">Decoder</a></li><li><a href="Diagnose.html">Diagnose</a></li><li><a href="Parser.html">Parser</a></li><li><a href="Simple.html">Simple</a></li><li><a href="Tag.html">Tag</a></li><li><a href="WasmLib.html">WasmLib</a></li></ul><h3>Global</h3><ul><li><a href="global.html#concat">concat</a></li><li><a href="global.html#fromHex">fromHex</a></li><li><a href="global.html#toHex">toHex</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>utils.js</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const cache = {}
+
+/**
+ * @callback FetchArrayBuffer
+ * @returns {Promise&lt;Buffer|ArrayBuffer>}
+ * @private
+ */
+/**
+ * @typedef FetchResult
+ * @property {FetchArrayBuffer} arrayBuffer
+ * @private
+ */
+/**
+ * A half-hearted
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API fetch}
+ * implementation that uses node's fs.promises.  DO NOT USE in browser.
+ *
+ * @param {URL} url - the URL to fetch, including file:
+ * @returns {Promise&lt;FetchResult>}
+ * @private
+ */
+async function fakeFetch(url) {
+  // Dynamic import works on internal modules in node 12
+  // eslint-disable-next-line node/no-unsupported-features/es-syntax
+  const fs = await import('fs')
+
+  return {
+    arrayBuffer() {
+      // it returns a Buffer not an ArrayBuffer, but WebAssembly.compile
+      // will work with Buffer
+
+      // There is a mismatch in URL definitions.  See:
+      // https://github.com/DefinitelyTyped/DefinitelyTyped/issues/34960
+      // @ts-ignore
+      return fs.promises.readFile(url)
+    }
+  }
+}
+
+/**
+ * Fetch a file with a file name relative to this one.
+ * @param {string} file - name of file to fetch
+ * @returns {Promise&lt;Buffer|ArrayBuffer>} the file contents
+ * @private
+ */
+async function fetchRelative(file) {
+  const src = new URL(file, import.meta.url)
+  const response = globalThis.fetch ?
+    await globalThis.fetch(src.toString()) :
+    await fakeFetch(src)
+  return response.arrayBuffer()
+}
+
+/**
+ * Load a WASM library, relative to this file.
+ * {@linkcode WasmLib#init WasmLib.init} MUST be called.
+ */
+export class WasmLib {
+  /**
+   * @param {string} fileName - name of the WASM file, relative to this one
+   */
+  constructor(fileName) {
+    this.fileName = fileName
+    /** @type {WebAssembly.Module?} */
+    this.compiled = cache[this.fileName]
+  }
+
+  /**
+   * Instantiate the library.  The first time this is called for a given
+   * library, the library will be fetched and compiled before instantiation.
+   * @param {object} [env={}] - the environment to be passed to the library.
+   * @returns {Promise&lt;object>} the exports of the library instance, with C
+   *   globals converted to their values.
+   */
+  async init(env = {}) {
+    if (!this.compiled) {
+      const buf = await fetchRelative(this.fileName)
+      cache[this.fileName] = this.compiled = await WebAssembly.compile(buf)
+    }
+    const m = await WebAssembly.instantiate(this.compiled, { env })
+    if (typeof m.exports.__wasm_call_ctors === 'function') {
+      m.exports.__wasm_call_ctors()
+    }
+
+    /* c8 ignore next */
+    if (!(m.exports.memory instanceof WebAssembly.Memory)) {
+      // STFU, tsc
+      throw new Error('Invalid exports, Memory required')
+    }
+    const mem = m.exports.memory
+    const u32 = new Int32Array(mem.buffer)
+    const ret = {
+      ...m.exports
+    }
+    for (const [k, v] of Object.entries(m.exports)) {
+      if (v instanceof WebAssembly.Global) {
+        const val = v.value
+        // all of the built-in globals return values, the ones that C
+        // exports return pointers to values.  Built-ins all start with "__"
+        ret[k] = k.startsWith('__') ? val : u32[val / 4]
+      }
+    }
+    return ret
+  }
+}
+
+/**
+ * Concatenate Uint8Array's.
+ * @param {Array&lt;Uint8Array>} arrays - the arrays to concat
+ * @returns {Uint8Array} concatenated
+ */
+export function concat(arrays) {
+  const len = arrays.reduce((t, v) => t + v.length, 0)
+  const ret = new Uint8Array(len)
+  let offset = 0
+  for (const a of arrays) {
+    ret.set(a, offset)
+    offset += a.length
+  }
+  return ret
+}
+
+/**
+ * Convert to a hex string
+ * @param {Uint8Array} buf - bytes
+ * @returns {string} hex
+ */
+export function toHex(buf) {
+  return buf.reduce((t, i) => t + ('0' + i.toString(16)).slice(-2), '')
+}
+
+/**
+ * Convert from a hex string
+ * @param {string} str - hex
+ * @returns {Uint8Array} bytes
+ */
+export function fromHex(str) {
+  const buf = new Uint8Array(Math.ceil(str.length / 2))
+  buf.forEach((_, i) => (buf[i] = parseInt(str.substr(i * 2, 2), 16)))
+  return buf
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+</body>
+</html>

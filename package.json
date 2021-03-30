@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "cd src; make",
+    "docs": "jsdoc -c .jsdoc.conf",
     "lint": "eslint lib/*.js test/*.js",
     "pretest": "npm run build",
     "test": "node test/test.js",
@@ -15,9 +16,12 @@
     "test:all": "nve --parallel 12,14,15 node test/test.js; node test/browsers.js",
     "prestart": "npm run build",
     "start": "light-server -q -s . -o /example/index.html -w 'lib/*,src/*,test/* # npm run coverage'",
+    "prestart:docs": "npm run docs",
+    "start:docs": "light-server -p 4002 -q -s . -o /docs/index.html -w 'README.md,.jsdoc.conf,lib/*,src/*,test/* # npm run docs && npm run types'",
     "precoverage": "npm run build",
     "coverage": "c8 -r lcov node test/test.js",
-    "coverage:ci": "c8 -r lcov node test/test.js"
+    "coverage:ci": "c8 -r lcov node test/test.js",
+    "types": "tsc"
   },
   "keywords": [
     "cbor",
@@ -36,14 +40,19 @@
     "url": "https://github.com/hildjj/cbor-wasm.git"
   },
   "homepage": "https://github.com/hildjj/cbor-wasm",
+  "types": "types/cbor.d.ts",
   "devDependencies": {
     "@cto.af/eslint-config": "^0.0.4",
-    "c8": "^7.6.0",
-    "eslint": "^7.22.0",
+    "better-docs": "^2.3.2",
+    "c8": "^7.7.0",
+    "eslint": "^7.23.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-webassembly": "^1.11.0",
+    "jsdoc": "^3.6.6",
+    "jsdoc-tsimport-plugin": "^1.0.4",
     "light-server": "^2.9.1",
-    "playwright": "^1.10.0"
+    "playwright": "^1.10.0",
+    "typescript": "^4.2.3"
   },
   "engines": {
     "node": ">=12"

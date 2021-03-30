@@ -13,13 +13,11 @@ async function main() {
   await d.init()
 
   runner.run(() => {
-    runner.run(() => {
-      // console.log's
-      d.write('00')
-    }, '00')
-  })
+    // console.log's
+    d.write('00')
+  }, '00')
 
-  let res = null
+  let res = NONE
   const e = new Decoder((er, x) => {
     if (er) {
       throw er
@@ -27,8 +25,29 @@ async function main() {
     res = x
   })
   await e.init()
-  e.write('6161')
-  assert.deepEqual(res, 'a', '6161')
+  runner.run(() => {
+    res = NONE
+    e.write('6161')
+    assert.deepEqual(res, 'a', '6161')
+  }, 'function param')
+  runner.run(() => {
+    res = NONE
+    e.writeBuffer[10] = 0x81
+    e.writeBuffer[11] = 0x80
+    e.write(null, 10, 12)
+    assert.deepEqual(res, [[]], '8180')
+  }, 'direct writeBuffer usage')
+  runner.run(() => {
+    res = NONE
+    e.writeBuffer[1] = 0x00
+    e.write('81')
+    assert.deepEqual(res, NONE)
+  }, 'Ensure do not read past end')
+  runner.run(() => {
+    res = NONE
+    e.reset()
+    assert.throws(() => e.write())
+  }, 'Throws on null buffer and end')
 
   const f = new Decoder({verbose: true})
   await f.init()
@@ -45,7 +64,7 @@ async function main() {
         dx += x
       }
     },
-    verbose: true
+    verbose: false
   })
   await diag.init()
   for (const [hex, expected] of [
@@ -71,10 +90,11 @@ async function main() {
       diag.write(hex)
       assert.deepEqual(der, NONE, hex)
       assert.deepEqual(dx, expected, hex)
-    })
+    }, hex)
   }
   runner.run(() => {
     dx = ''
+    diag.opts.verbose = true
     diag.write('ff')
     assert(der instanceof Error, 'ff')
     assert.deepEqual(dx, '', 'ff')

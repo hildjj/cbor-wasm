@@ -10,9 +10,7 @@ I'll release this eventually.  Until then:
 
 ## Required node version
 
-For now, use a modern browser or Node 15.  Node 14 will work with
-`--experimental-wasm-bigint`.  See
-[issue](https://github.com/hildjj/cbor-wasm/issues/2).
+Use a modern browser or Node 12+.
 
 ## Design
 
