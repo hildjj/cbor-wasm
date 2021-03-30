@@ -37,7 +37,7 @@ function exec(cmd, args) {
 
 async function main() {
   const tests = (await fs.promises.readdir(dirname))
-    .filter(n => n.match(/^test_.*?\.mjs/))
+    .filter(n => n.match(/^test_.*?\.js/))
   const [cmd] = process.argv
   const args = [
     ...process.execArgv,

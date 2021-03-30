@@ -1,5 +1,5 @@
 import assert from 'assert'
-import {Decoder, Diagnose} from '../lib/cbor.mjs'
+import {Decoder, Diagnose} from '../lib/cbor.js'
 import util from 'util'
 
 export const NONE = Symbol('NONE')

@@ -1,6 +1,6 @@
-import {TestParser, Runner} from './utils.mjs'
-import {Tag} from '../lib/cbor.mjs'
-import {fromHex} from '../lib/utils.mjs'
+import {TestParser, Runner} from './utils.js'
+import {Tag} from '../lib/cbor.js'
+import {fromHex} from '../lib/utils.js'
 
 import assert from 'assert'
 

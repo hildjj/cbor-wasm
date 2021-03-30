@@ -19,7 +19,7 @@
 </style>
 <script src='https://unpkg.com/node-inspect-extracted@1.0.4/dist/inspect.js'></script>
 <script type='module'>
-import {Decoder, Diagnose} from '../lib/cbor.mjs'
+import {Decoder, Diagnose} from '../lib/cbor.js'
 async function main() {
   const d = new Decoder((er, val) => {
     const r = document.querySelector('#result')

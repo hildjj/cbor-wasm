@@ -1,5 +1,5 @@
-import {Runner} from './utils.mjs'
-import {Decoder, Diagnose} from '../lib/cbor.mjs'
+import {Runner} from './utils.js'
+import {Decoder, Diagnose} from '../lib/cbor.js'
 import assert from 'assert'
 
 const BUA = globalThis.BigUint64Array

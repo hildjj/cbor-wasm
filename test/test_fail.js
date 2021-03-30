@@ -1,4 +1,4 @@
-import {TestParser, Runner} from './utils.mjs'
+import {TestParser, Runner} from './utils.js'
 import assert from 'assert'
 import util from 'util'
 import fs from 'fs'
