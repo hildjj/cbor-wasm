@@ -185,7 +185,8 @@ so you'll need to be careful about your own memory management in the caller.
 <code>__heap_base</code> and <code>PARSER_SIZE</code> will be useful to you.  See
 <a href="https://github.com/hildjj/cbor-wasm/blob/c0f702f0c02d0f695ac5a7406023a786b91c0c39/lib/cbor.mjs#L137">cbor.mjs</a>
 for ideas.</p>
-<p>For JS:</p>
+<p>For JS:
+API docs <a href="https://hildjj.github.io/cbor-wasm/">here</a>.</p>
 <pre class="prettyprint source lang-js"><code>import {Decoder, Tag, Simple} from 'cbor-wasm'
 const d = new Decoder((er, obj) => {})
 await d.init()

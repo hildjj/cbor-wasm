@@ -82,6 +82,8 @@ so you'll need to be careful about your own memory management in the caller.
 for ideas.
 
 For JS:
+API docs [here](https://hildjj.github.io/cbor-wasm/).
+
 ```js
 import {Decoder, Tag, Simple} from 'cbor-wasm'
 const d = new Decoder((er, obj) => {})
