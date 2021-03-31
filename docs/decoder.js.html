@@ -123,7 +123,7 @@ export class Simple {
  */
 export class Tag {
   /**
-   * @param {number} tag - the tag number
+   * @param {bigint} tag - the tag number
    * @param {any} val - the value inside the tag
    */
   constructor(tag, val) {
@@ -133,6 +133,10 @@ export class Tag {
 
   /**
    * Decode known tags, or return an instance of {@linkcode Tag}
+   * @param {bigint} tag - tag number
+   * @param {any} val - the value
+   * @returns {Tag|any} a Tag if the tag number is unknown, otherwise a coerced
+   *   value
    */
   static decode(tag, val) {
     switch (tag) {

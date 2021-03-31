@@ -17,14 +17,18 @@ export class Simple {
 export class Tag {
     /**
      * Decode known tags, or return an instance of {@linkcode Tag}
+     * @param {bigint} tag - tag number
+     * @param {any} val - the value
+     * @returns {Tag|any} a Tag if the tag number is unknown, otherwise a coerced
+     *   value
      */
-    static decode(tag: any, val: any): bigint | Tag;
+    static decode(tag: bigint, val: any): Tag | any;
     /**
-     * @param {number} tag - the tag number
+     * @param {bigint} tag - the tag number
      * @param {any} val - the value inside the tag
      */
-    constructor(tag: number, val: any);
-    tag: number;
+    constructor(tag: bigint, val: any);
+    tag: bigint;
     val: any;
 }
 /**
