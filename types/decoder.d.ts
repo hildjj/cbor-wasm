@@ -4,9 +4,9 @@
  */
 export class Simple {
     /**
-     * @param {BigInt} val - the simple value
+     * @param {bigint} val - the simple value
      */
-    constructor(val: BigInt);
+    constructor(val: bigint);
     val: number;
 }
 /**
