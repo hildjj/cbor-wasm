@@ -21,3 +21,8 @@ src/
 example/
 .gitmodules
 test-vectors/
+tsconfig.json
+docs/
+.github/
+.jsdoc.conf
+d.js
