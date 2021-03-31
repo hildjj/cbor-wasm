@@ -145,6 +145,8 @@ async function fakeFetch(url) {
  */
 async function fetchRelative(file) {
   const src = new URL(file, import.meta.url)
+  // We're only going to use fakeFetch in the unit tests
+  /* c8 ignore next */
   const response = globalThis.fetch ?
     await globalThis.fetch(src.toString()) :
     await fakeFetch(src)
@@ -182,11 +184,13 @@ export class WasmLib {
       m.exports.__wasm_call_ctors()
     }
 
-    /* c8 ignore next */
+    /* c8 ignore start */
     if (!(m.exports.memory instanceof WebAssembly.Memory)) {
       // STFU, tsc
       throw new Error('Invalid exports, Memory required')
     }
+    /* c8 ignore stop */
+
     const mem = m.exports.memory
     const u32 = new Int32Array(mem.buffer)
     const ret = {
