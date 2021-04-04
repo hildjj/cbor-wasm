@@ -8,7 +8,7 @@ async function main() {
   await parser.init()
   const runner = new Runner()
 
-  const fail = new URL('../test-vectors/fail.json', import.meta.url)
+  const fail = new URL('../../../test-vectors/fail.json', import.meta.url)
   let vectors = []
   try {
     const txt = await fs.promises.readFile(fail, 'utf8')

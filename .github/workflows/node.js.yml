@@ -38,7 +38,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v1.2.1
         with:
-          version: 5.18.8
+          version: 5.18.9
           run_install: |
             - args: [-D, c8]
       - name: Test ${{ matrix.node-version }}

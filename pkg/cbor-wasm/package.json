@@ -1,0 +1,49 @@
+{
+  "name": "cbor-wasm",
+  "version": "0.0.0",
+  "description": "CBOR decoder with the hard bits in WASM",
+  "main": "lib/cbor.js",
+  "type": "module",
+  "scripts": {
+    "build": "cd src; make",
+    "clean": "cd src; make clean",
+    "pretest": "npm run build",
+    "test": "npm run test:bare",
+    "test:bare": "node test/test.js",
+    "pretest:browsers": "npm run build",
+    "test:browsers": "node test/browsers.js",
+    "pretest:all": "npm run build && npm run types && npm run docs",
+    "test:all": "nve --parallel 12,14,15 npm run test:bare; node test/browsers.js",
+    "test:bigendian": "docker run --rm -it -v ${PWD}:/root/cbor-wasm -w /root/cbor-wasm s390x/node npm run test:bare",
+    "prestart": "npm run build",
+    "start": "light-server -q -s . -o /example/index.html -w 'lib/*,src/*,test/* # npm run coverage'",
+    "types": "tsc"
+  },
+  "keywords": [
+    "cbor",
+    "decoder",
+    "wasm",
+    "stream",
+    "synchronous",
+    "sync",
+    "rfc8949",
+    "8949"
+  ],
+  "author": "Joe Hildebrand <joe-github@cursive.net>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hildjj/cbor-wasm.git",
+    "directory": "pkg/cbor-wasm"
+  },
+  "homepage": "https://github.com/hildjj/cbor-wasm",
+  "types": "types/cbor.d.ts",
+  "devDependencies": {
+    "light-server": "^2.9.1",
+    "playwright": "^1.10.0",
+    "typescript": "^4.2.3"
+  },
+  "engines": {
+    "node": ">=12"
+  }
+}

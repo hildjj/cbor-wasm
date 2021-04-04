@@ -8,7 +8,9 @@ async function main() {
   await parser.init()
   const runner = new Runner()
 
-  const appendix_a = new URL('../test-vectors/appendix_a.json', import.meta.url)
+  const appendix_a = new URL(
+    '../../../test-vectors/appendix_a.json', import.meta.url
+  )
   let vectors = []
   try {
     let txt = await fs.promises.readFile(appendix_a, 'utf8')

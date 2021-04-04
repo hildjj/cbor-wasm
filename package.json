@@ -1,29 +1,28 @@
 {
-  "name": "cbor-wasm",
+  "name": "cbor-wasm-monorepo",
   "version": "0.0.0",
   "description": "CBOR decoder with the hard bits in WASM",
-  "main": "lib/cbor.js",
+  "main": "pkg/cbor-wasm/lib/cbor.js",
   "type": "module",
+  "private": true,
+  "workspaces": [
+    "./pkg/*"
+  ],
   "scripts": {
-    "build": "cd src; make",
+    "build": "pnpm run -r --if-present --filter ./pkg build",
+    "clean": "pnpm run -r --if-present --filter ./pkg clean && rm -rf node_modules pkg/*/node_modules coverage",
     "docs": "jsdoc -c .jsdoc.conf",
-    "lint": "eslint lib/*.js test/*.js",
-    "pretest": "npm run build",
-    "test": "npm run test:bare",
-    "test:bare": "node test/test.js",
-    "pretest:browsers": "npm run build",
-    "test:browsers": "node test/browsers.js",
-    "pretest:all": "npm run build && npm run types && npm run docs",
-    "test:all": "nve --parallel 12,14,15 npm run test:bare; node test/browsers.js",
-    "test:bigendian": "docker run --rm -it -v ${PWD}:/root/cbor-wasm -w /root/cbor-wasm s390x/node npm run test:bare",
+    "lint": "eslint pkg/*/{lib,test,bin}/**.js",
+    "test": "pnpm run -r --if-present --filter ./pkg test",
+    "test:all": "pnpm run -r --if-present --filter ./pkg test:all",
+    "test:bare": "pnpm run -r --if-present --filter ./pkg test:bare",
     "prestart": "npm run build",
     "start": "light-server -q -s . -o /example/index.html -w 'lib/*,src/*,test/* # npm run coverage'",
     "prestart:docs": "npm run docs",
-    "start:docs": "light-server -p 4002 -q -s . -o /docs/index.html -w 'README.md,.jsdoc.conf,lib/*,src/*,test/* # npm run docs && npm run types'",
+    "start:docs": "light-server -p 4002 -q -s . -o /docs/index.html -w 'README.md,.jsdoc.conf,lib/*,src/*,test/* # npm run docs'",
     "precoverage": "npm run build",
-    "coverage": "c8 -r lcov npm run test:bare",
-    "coverage:ci": "c8 -r lcov npm run test:bare",
-    "types": "tsc"
+    "coverage": "npm run coverage:ci",
+    "coverage:ci": "c8 -r lcov -x 'pkg/*/test/**' pnpm run -r --if-present --filter ./pkg test:bare"
   },
   "keywords": [
     "cbor",
@@ -42,7 +41,6 @@
     "url": "https://github.com/hildjj/cbor-wasm.git"
   },
   "homepage": "https://github.com/hildjj/cbor-wasm",
-  "types": "types/cbor.d.ts",
   "devDependencies": {
     "@cto.af/eslint-config": "^0.0.4",
     "better-docs": "^2.3.2",
@@ -53,8 +51,9 @@
     "jsdoc": "^3.6.6",
     "jsdoc-tsimport-plugin": "^1.0.4",
     "light-server": "^2.9.1",
-    "playwright": "^1.10.0",
-    "typescript": "^4.2.3"
+    "pnpm": "^5.18.9",
+    "react": "^16",
+    "react-dom": "^16"
   },
   "engines": {
     "node": ">=12"
