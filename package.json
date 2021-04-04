@@ -13,7 +13,7 @@
     "test:bare": "node test/test.js",
     "pretest:browsers": "npm run build",
     "test:browsers": "node test/browsers.js",
-    "pretest:all": "npm run build",
+    "pretest:all": "npm run build && npm run types && npm run docs",
     "test:all": "nve --parallel 12,14,15 npm run test:bare; node test/browsers.js",
     "test:bigendian": "docker run --rm -it -v ${PWD}:/root/cbor-wasm -w /root/cbor-wasm s390x/node npm run test:bare",
     "prestart": "npm run build",
