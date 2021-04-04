@@ -294,10 +294,6 @@ l_return:
   return count;
 }
 
-double float64(uint64_t* u) {
-  return *(double*)u;
-}
-
 double float16(short* inp) {
   unsigned long long sign = *inp & 0x8000;
   unsigned long long exp = *inp & 0x7C00;

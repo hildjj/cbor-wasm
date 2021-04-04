@@ -35,6 +35,21 @@ export class Tag {
  * Decode events from the WASM library into JS objects
  */
 export class Decoder extends Parser {
+    /**
+     * @callback DecoderFunction
+     * @param {string|Uint8Array} input - The input to parse.  Should be a single
+     *   complete CBOR item.
+     * @returns {any} the decoded item
+     * @throws {Error} on decoding errors, input too short
+     */
+    /**
+     * Convenience function for decoding single complete CBOR inputs.  You still
+     * have to await this function for WASM setup, but the function it returns
+     * is synchronous.
+     * @returns {Promise<DecoderFunction>}
+     */
+    static decoder(): Promise<DecoderFunction>;
     stack: any[];
 }
+export type DecoderFunction = (input: string | Uint8Array) => any;
 import { Parser } from "./parser.js";

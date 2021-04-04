@@ -98,7 +98,21 @@ async function main() {
     diag.write('ff')
     assert(der instanceof Error, 'ff')
     assert.deepEqual(dx, '', 'ff')
-  })
+  }, 'ff')
+
+  const sd = await Decoder.decoder()
+  runner.run(() => {
+    assert.deepEqual(sd('00'), 0, 'static 00')
+    assert.throws(() => sd('81'))
+    assert.throws(() => sd('ff'))
+
+    const bigsz = 2 * d.max
+    const big = new Uint8Array(bigsz + 5)
+    big[0] = 0x5a
+    const dv = new DataView(big.buffer)
+    dv.setUint32(1, bigsz, false)
+    assert.deepEqual(sd(big).length, bigsz, 'big')
+  }, 'static decode')
 
   runner.summary()
 }

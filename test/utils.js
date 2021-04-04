@@ -38,10 +38,10 @@ export class TestParser {
     // this is a hack to look at the current parser state.  it must
     // be checked after write() returns, when you know a single complete
     // item has been written.
-    this.parser_state = new Int32Array(
+    this.parser_state = new DataView(
       this.decoder.mod.memory.buffer,
       this.decoder.parser + 8,
-      2
+      8
     )
   }
 
@@ -68,8 +68,8 @@ export class TestParser {
       throw new Error('Unused data')
     }
     // make sure we don't have to call reset() after every item.
-    assert.equal(this.parser_state[0], 8) // START
-    assert.equal(this.parser_state[1], 0)
+    assert.equal(this.parser_state.getInt32(0, true), 8) // START
+    assert.equal(this.parser_state.getInt32(4, true), 0)
 
     return this.result
   }

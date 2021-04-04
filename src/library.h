@@ -77,4 +77,4 @@ extern const int FAIL;
 
 void init_parser(Parser* parser);
 int parse(Parser* parser, unsigned char* start, int len);
-double float64(uint64_t* u);
+double float16(short* inp);
