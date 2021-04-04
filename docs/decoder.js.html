@@ -100,6 +100,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>import {concat, toHex} from './utils.js'
 import {Parser, PHASES, MT} from './parser.js'
+import {fromHex} from './utils.js'
 
 const BREAK = Symbol('BREAK')
 const NONE = Symbol('NONE')
@@ -191,7 +192,18 @@ export class Decoder extends Parser {
     return inp => {
       try {
         res = NONE
-        d.write(inp)
+        if (typeof inp === 'string') {
+          inp = fromHex(inp)
+        }
+        let tot = 0
+        const len = inp.length
+        while (tot &lt; len) {
+          tot += d.write(inp, tot)
+          if (res !== NONE) {
+            break
+          }
+        }
+
         if (res === NONE) {
           throw new Error('Incomplete input')
         }
@@ -387,11 +399,11 @@ export class Decoder extends Parser {
             break
           }
           case 4: {
-            ;[ret] = this.f32
+            ret = this.dv.getFloat32(0, true)
             break
           }
           case 8: {
-            ret = this.mod.float64(this.parser)
+            ret = this.dv.getFloat64(0, true)
             break
           }
         }

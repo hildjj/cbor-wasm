@@ -53,8 +53,7 @@ export class Parser {
     mem: Uint8Array;
     writeBuffer: Uint8Array;
     max: number;
-    f32: Float32Array;
-    lastVal: () => bigint;
+    dv: DataView;
     /**
      * Process an event
      *

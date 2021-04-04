@@ -183,20 +183,8 @@ export class Parser {
     this.data = this.parser + this.mod.PARSER_SIZE
     this.mem = new Uint8Array(this.mod.memory.buffer)
     this.writeBuffer = new Uint8Array(this.mod.memory.buffer, this.data)
-    this.max = this.writeBuffer.length
-    this.f32 = new Float32Array(this.mod.memory.buffer, this.parser, 1)
-
-    // TODO: big-endian machine will have to swap bytes.
-    // WASM ints are always LE, I think
-    if (typeof BigUint64Array === 'undefined') {
-      const last_val = new Uint32Array(this.mod.memory.buffer, this.parser, 2)
-      this.lastVal = () => (BigInt(last_val[1]) &lt;&lt; 32n) | BigInt(last_val[0])
-    } else {
-      const last_val =
-        new BigUint64Array(this.mod.memory.buffer, this.parser, 1)
-      this.lastVal = () => last_val[0]
-    }
-
+    this.max = this.writeBuffer.length - 1
+    this.dv = new DataView(this.mod.memory.buffer, this.parser, 8)
     this.reset()
   }
 
@@ -245,11 +233,18 @@ export class Parser {
       if (end == null) {
         end = buf.length
       }
-      this.writeBuffer.set(buf, start)
-      return this.mod.parse(this.parser, this.data, end)
+      let len = end - start
+      if (len > this.max) {
+        len = this.max
+      }
+      this.writeBuffer.set(buf.subarray(start, start + len))
+      return this.mod.parse(this.parser, this.data, len)
     }
     if (end == null) {
       throw new Error('`end` is required when using writeBuffer')
+    }
+    if (end > this.max) {
+      end = this.max
     }
     return this.mod.parse(this.parser, this.data + start, end - start)
   }
@@ -263,7 +258,7 @@ export class Parser {
    * @param {number} line - Line number from library.c, source of the event
    */
   baseEvent(mt, bytes, phase, line) {
-    const val = this.lastVal()
+    const val = this.dv.getBigUint64(0, true)
     if (this.opts.verbose) {
       console.log('%O', {
         mt: MT[mt], bytes, val, phase: PHASES[phase], line

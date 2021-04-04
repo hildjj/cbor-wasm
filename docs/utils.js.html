@@ -192,7 +192,7 @@ export class WasmLib {
     /* c8 ignore stop */
 
     const mem = m.exports.memory
-    const u32 = new Int32Array(mem.buffer)
+    const dv = new DataView(mem.buffer)
     const ret = {
       ...m.exports
     }
@@ -201,7 +201,8 @@ export class WasmLib {
         const val = v.value
         // all of the built-in globals return values, the ones that C
         // exports return pointers to values.  Built-ins all start with "__"
-        ret[k] = k.startsWith('__') ? val : u32[val / 4]
+        // and WASM is always little-endian
+        ret[k] = k.startsWith('__') ? val : dv.getInt32(val, true)
       }
     }
     return ret

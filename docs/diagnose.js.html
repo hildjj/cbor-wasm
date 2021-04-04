@@ -240,11 +240,11 @@ export class Diagnose extends Parser {
             break
           }
           case 4: {
-            ;[num] = this.f32
+            num = this.dv.getFloat32(0, true)
             break
           }
           case 8: {
-            num = this.mod.float64(this.parser)
+            num = this.dv.getFloat64(0, true)
             break
           }
         }
