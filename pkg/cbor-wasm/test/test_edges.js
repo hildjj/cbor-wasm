@@ -36,6 +36,13 @@ async function main() {
     e.writeBuffer[11] = 0x80
     e.write(null, 10, 12)
     assert.deepEqual(res, [[]], '8180')
+
+    res = NONE
+    e.writeBuffer[0] = 0x5a
+    e.dv.setUint32(1, e.max * 2)
+    assert.deepEqual(e.write(null, 0, (e.max * 2) + 1), e.max)
+    assert.deepEqual(res, NONE)
+    e.reset()
   }, 'direct writeBuffer usage')
   runner.run(() => {
     res = NONE

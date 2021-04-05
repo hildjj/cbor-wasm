@@ -1,0 +1,38 @@
+{
+  "name": "cbor-wasm-cli",
+  "version": "0.0.0",
+  "description": "Command line interface for cbor-wasm",
+  "type": "module",
+  "bin": {
+    "cbor-wasm": "bin/cbor-wasm.js"
+  },
+  "scripts": {
+    "test": "npm run test:bare",
+    "test:bare": "node test/exec.js"
+  },
+  "keywords": [
+    "cbor",
+    "decoder",
+    "wasm",
+    "stream",
+    "synchronous",
+    "sync",
+    "rfc8949",
+    "8949"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hildjj/cbor-wasm.git",
+    "directory": "pkg/cbor-wasm"
+  },
+  "homepage": "https://github.com/hildjj/cbor-wasm",
+  "author": "Joe Hildebrand <joe-github@cursive.net>",
+  "license": "MIT",
+  "dependencies": {
+    "cbor-wasm": "0.0.0",
+    "commander": "^7.2.0"
+  },
+  "engines": {
+    "node": ">=12"
+  }
+}

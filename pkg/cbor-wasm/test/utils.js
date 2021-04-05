@@ -129,6 +129,41 @@ export class Runner {
     }
   }
 
+  async runAsync(test, desc, skipped = false) {
+    this.total++
+    if (skipped) {
+      try {
+        if (typeof test === 'function') {
+          await test(true)
+        } else {
+          await test
+        }
+        console.log(`not ok ${this.notOk++} ${desc} (EXPECTED FAILURE)`)
+        return false
+      } catch (ignored) {
+        console.log(`skipped ${this.skipped++} ${desc}`)
+        return true
+      }
+    } else {
+      try {
+        if (typeof test === 'function') {
+          await test(false)
+        } else {
+          await test
+        }
+        console.log(`ok ${this.ok++} ${desc}`)
+        return true
+      } catch (e) {
+        console.log(`not ok ${this.notOk++} ${desc}
+    ---
+      ${util.inspect(e).replace(/\n/g, '\n    ')}
+    ...
+        `)
+        return false
+      }
+    }
+  }
+
   summary() {
     console.log(`
 ${this.notOk}..${this.skipped}..${this.total}
