@@ -39,8 +39,7 @@ jobs:
         uses: pnpm/action-setup@v1.2.1
         with:
           version: 5.18.9
-          run_install: |
-            - args: [-D, c8]
+          run_install: true
       - name: Test ${{ matrix.node-version }}
         run: npm run coverage:ci
       - name: Coveralls Parallel
