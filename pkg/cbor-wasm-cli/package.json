@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "npm run test:bare",
-    "test:bare": "node test/exec.js"
+    "test:bare": "node test/exec.js",
+    "test:all": "nve --parallel 12,14,15 npm test:bare"
   },
   "keywords": [
     "cbor",

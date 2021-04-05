@@ -12,9 +12,9 @@
     "test:bare": "node test/test.js",
     "pretest:browsers": "npm run build",
     "test:browsers": "node test/browsers.js",
-    "pretest:all": "npm run build && npm run types && npm run docs",
+    "pretest:all": "npm run build && npm run types",
     "test:all": "nve --parallel 12,14,15 npm run test:bare; node test/browsers.js",
-    "test:bigendian": "docker run --rm -it -v ${PWD}:/root/cbor-wasm -w /root/cbor-wasm s390x/node npm run test:bare",
+    "test:bigendian": "docker run --rm -it -v ${PWD}/../..:/root/cbor-wasm -w /root/cbor-wasm/pkg/cbor-wasm s390x/node npm run test:bare",
     "prestart": "npm run build",
     "start": "light-server -q -s . -o /example/index.html -w 'lib/*,src/*,test/* # npm run coverage'",
     "types": "tsc"
