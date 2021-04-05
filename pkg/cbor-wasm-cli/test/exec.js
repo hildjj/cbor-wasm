@@ -164,6 +164,17 @@ WRITE: "00"
     stdin: '81 00'
   }, '[0]\n', 'readline js')
 
+  await r.runAsync(async() => {
+    const ret = await exec('cbor-wasm', {
+      args: ['-x'],
+      env: {
+        CBOR_WASM_STDIN_TTY: 1
+      },
+      stdin: ''
+    })
+    assert.deepEqual(ret, 'cbor-wasm> ')
+  })
+
   await r.runAsync(() => assert.rejects(() => exec('cbor-wasm', {
     args: [ 'js', '-x'],
     stdin: 'ff'

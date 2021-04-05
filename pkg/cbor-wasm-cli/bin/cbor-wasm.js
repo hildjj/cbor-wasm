@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Decoder, Diagnose } from 'cbor-wasm'
-import { Command } from 'commander'
+import { Command, Option } from 'commander'
 import fs from 'fs'
 import util from 'util'
 
@@ -73,7 +73,9 @@ async function eachHex(d, files, opts) {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
-      prompt: process.stdin.isTTY ? 'cbor-wasm> ' : ''
+      prompt: (process.stdin.isTTY || process.env.CBOR_WASM_STDIN_TTY) ?
+        'cbor-wasm> ' :
+        ''
     })
     rl.on('line', line => {
       try {
