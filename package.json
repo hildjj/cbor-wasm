@@ -52,6 +52,7 @@
     "jsdoc-tsimport-plugin": "^1.0.4",
     "light-server": "^2.9.1",
     "pnpm": "^5.18.9",
+    "prop-types": "^15.7.2",
     "react": "^16",
     "react-dom": "^16"
   },
