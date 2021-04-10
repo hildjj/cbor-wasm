@@ -2,7 +2,7 @@ import fs from 'fs'
 
 const parser = new URL('../lib/parser.js', import.meta.url)
 const orig = fs.readFileSync(parser, 'utf8')
-const wasm = fs.readFileSync(new URL('../lib/library.wasm', import.meta.url))
+const wasm = fs.readFileSync(new URL('../src/library.wasm', import.meta.url))
 
 if (wasm.length >= 4096) {
   throw new Error('Embedding synchronous WASM only works for < 4kB files')

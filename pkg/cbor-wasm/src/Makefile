@@ -1,6 +1,6 @@
 CLANG = clang
 INPUT = library.c
-OUTPUT = ../lib/library.wasm
+OUTPUT = library.wasm
 OPTIMIZE = -Os -flto -Wl,--strip-all -Wl,--lto-O3 -Wl,-O3
 #OPTIMIZE = -g
 CLI = cbor-cli
