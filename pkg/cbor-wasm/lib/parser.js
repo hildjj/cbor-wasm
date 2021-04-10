@@ -1,5 +1,8 @@
-import {fromHex, WasmLib} from './utils.js'
-const lib = new WasmLib('library.wasm')
+import {fromHex, fromBase64} from './utils.js'
+
+// eslint-disable-next-line max-len
+const wasm64 = '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'
+const lib = new WebAssembly.Module(fromBase64(wasm64))
 
 /**
   * @callback ParserEvent
@@ -62,6 +65,37 @@ export class Parser {
     /** @type {number?} */
     this.parser = null
     this.td = new TextDecoder()
+
+    // sync instantiate
+    const instance = new WebAssembly.Instance(lib, {
+      env: {
+        event: this._event.bind(this)
+      }
+    })
+
+    /** @type {object} */
+    this.mod = { ...instance.exports }
+    this.mod.__wasm_call_ctors()
+    this.memDV = new DataView(this.mod.memory.buffer)
+    this.memU8 = new Uint8Array(this.mod.memory.buffer)
+
+    for (const [k, v] of Object.entries(instance.exports)) {
+      if (v instanceof WebAssembly.Global) {
+        const val = v.value
+        // all of the built-in globals return values, the ones that C
+        // exports return pointers to values.  Built-ins all start with "__"
+        // and WASM is always little-endian
+        this.mod[k] = k.startsWith('__') ? val : this.memDV.getInt32(val, true)
+      }
+    }
+
+    /** @type {number} */
+    this.parser = this.mod.__heap_base
+    /** @type {number} */
+    this.data = this.parser + this.mod.PARSER_SIZE
+    this.writeBuffer = new Uint8Array(this.mod.memory.buffer, this.data)
+    this.max = this.writeBuffer.length - 1
+    this.reset()
   }
 
   /**
@@ -69,23 +103,6 @@ export class Parser {
    */
   reset() {
     this.mod.init_parser(this.parser)
-  }
-
-  /**
-   * Initializes this instance.  MUST be called and awaited for before anything
-   * else is called.
-   */
-  async init() {
-    /** @type {object} */
-    this.mod = await lib.init({event: this._event.bind(this)})
-    this.parser = this.mod.__heap_base
-    /** @type {number} */
-    this.data = this.parser + this.mod.PARSER_SIZE
-    this.mem = new Uint8Array(this.mod.memory.buffer)
-    this.writeBuffer = new Uint8Array(this.mod.memory.buffer, this.data)
-    this.max = this.writeBuffer.length - 1
-    this.dv = new DataView(this.mod.memory.buffer, this.parser, 8)
-    this.reset()
   }
 
   /**
@@ -158,7 +175,7 @@ export class Parser {
    * @param {number} line - Line number from library.c, source of the event
    */
   baseEvent(mt, bytes, phase, line) {
-    const val = this.dv.getBigUint64(0, true)
+    const val = this.memDV.getBigUint64(this.parser, true)
     if (this.opts.verbose) {
       console.log('%O', {
         mt: MT[mt], bytes, val, phase: PHASES[phase], line

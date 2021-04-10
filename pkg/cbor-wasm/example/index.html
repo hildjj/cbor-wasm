@@ -19,8 +19,8 @@
 </style>
 <script src='https://unpkg.com/node-inspect-extracted@1.0.4/dist/inspect.js'></script>
 <script type='module'>
-import {Decoder, Diagnose} from '../lib/cbor.js'
-async function main() {
+import {Decoder, Diagnose} from '../lib/cbor-wasm.js'
+function main() {
   const d = new Decoder((er, val) => {
     const r = document.querySelector('#result')
     if (er) {
@@ -41,8 +41,6 @@ async function main() {
       r.innerText += val
     }
   })
-  await d.init()
-  await diag.init()
 
   const button = document.querySelector('#decode')
   button.onclick = () => {

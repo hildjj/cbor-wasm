@@ -5,7 +5,6 @@ import fs from 'fs'
 
 async function main() {
   const parser = new TestParser()
-  await parser.init()
   const runner = new Runner()
 
   const appendix_a = new URL(

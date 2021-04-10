@@ -1,5 +1,5 @@
 import {TestParser, Runner} from './utils.js'
-import {Tag} from '../lib/cbor.js'
+import {Tag} from '../lib/cbor-wasm.js'
 import {fromHex} from '../lib/utils.js'
 
 import assert from 'assert'
@@ -74,9 +74,8 @@ const cases = [
   ['f9c000', -2]
 ]
 
-async function main() {
+function main() {
   const parser = new TestParser()
-  await parser.init()
   const runner = new Runner()
   for (const [actual, expected, predicate] of cases) {
     runner.run(() => {
@@ -91,4 +90,4 @@ async function main() {
   runner.summary()
 }
 
-main().catch(console.error)
+main()

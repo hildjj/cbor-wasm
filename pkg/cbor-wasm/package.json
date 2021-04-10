@@ -2,10 +2,11 @@
   "name": "cbor-wasm",
   "version": "0.0.0",
   "description": "CBOR decoder with the hard bits in WASM",
-  "main": "lib/cbor.js",
+  "main": "lib/cbor-wasm.js",
   "type": "module",
   "scripts": {
     "build": "cd src; make",
+    "postbuild": "node tools/insertWasm.js",
     "clean": "cd src; make clean",
     "pretest": "npm run build",
     "test": "npm run test:bare",

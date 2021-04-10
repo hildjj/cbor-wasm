@@ -55,6 +55,8 @@ function runGood(r, opts, expected, desc) {
     let ret = NONE
     await assert.doesNotReject(async() => {
       ret = await exec('cbor-wasm', opts)
+      // ignore line number changes
+      ret = ret.replace(/line: \d+/g, () => 'line: xxx')
     })
     assert.deepEqual(ret, expected)
   }, desc)
@@ -75,6 +77,7 @@ Options:
 Commands:
   js [files...]             convert CBOR to JavaScript
   diagnose|diag [files...]  convert CBOR to diagnostic string
+  comment [files...]        output the commented version of a CBOR item
   help [command]            display help for command
 `, 'cbor-wasm -h')
 
@@ -123,7 +126,7 @@ Uint8Array(127742) [
     stdin: Buffer.from('00', 'hex')
   }, `\
 Reading: "-"
-{ mt: 'POS', bytes: 0, val: 0n, phase: 'FINISH', line: 184 }
+{ mt: 'POS', bytes: 0, val: 0n, phase: 'FINISH', line: xxx }
 0
 `, 'default to stdin, verbose')
 
@@ -135,13 +138,13 @@ Reading: "-"
     args: ['diag', '-v', '-x', '818120']
   }, `\
 WRITE: "818120"
-{ mt: 'ARRAY', bytes: 0, val: 1n, phase: 'BEGIN', line: 208 }
-[{ mt: 'ARRAY', bytes: 0, val: 1n, phase: 'BEGIN', line: 208 }
-[{ mt: 'NEG', bytes: 0, val: 0n, phase: 'FINISH', line: 184 }
--1{ mt: 'ARRAY', bytes: 1, val: 0n, phase: 'AFTER_ITEM', line: 253 }
-{ mt: 'ARRAY', bytes: -1, val: 0n, phase: 'FINISH', line: 258 }
-]{ mt: 'ARRAY', bytes: 1, val: 0n, phase: 'AFTER_ITEM', line: 253 }
-{ mt: 'ARRAY', bytes: -1, val: 0n, phase: 'FINISH', line: 258 }
+{ mt: 'ARRAY', bytes: 0, val: 1n, phase: 'BEGIN', line: xxx }
+[{ mt: 'ARRAY', bytes: 0, val: 1n, phase: 'BEGIN', line: xxx }
+[{ mt: 'NEG', bytes: 0, val: 0n, phase: 'FINISH', line: xxx }
+-1{ mt: 'ARRAY', bytes: 1, val: 0n, phase: 'AFTER_ITEM', line: xxx }
+{ mt: 'ARRAY', bytes: -1, val: 0n, phase: 'FINISH', line: xxx }
+]{ mt: 'ARRAY', bytes: 1, val: 0n, phase: 'AFTER_ITEM', line: xxx }
+{ mt: 'ARRAY', bytes: -1, val: 0n, phase: 'FINISH', line: xxx }
 ]
 `, 'hex diag verbose cmd line')
 
@@ -150,12 +153,12 @@ WRITE: "818120"
     stdin: '81 00'
   }, `\
 WRITE: "81"
-{ mt: 'ARRAY', bytes: 0, val: 1n, phase: 'BEGIN', line: 208 }
+{ mt: 'ARRAY', bytes: 0, val: 1n, phase: 'BEGIN', line: xxx }
 WRITE: "00"
-{ mt: 'POS', bytes: 0, val: 0n, phase: 'FINISH', line: 184 }
+{ mt: 'POS', bytes: 0, val: 0n, phase: 'FINISH', line: xxx }
 { stack: [ [], 0 ] }
-{ mt: 'ARRAY', bytes: 1, val: 0n, phase: 'AFTER_ITEM', line: 253 }
-{ mt: 'ARRAY', bytes: -1, val: 0n, phase: 'FINISH', line: 258 }
+{ mt: 'ARRAY', bytes: 1, val: 0n, phase: 'AFTER_ITEM', line: xxx }
+{ mt: 'ARRAY', bytes: -1, val: 0n, phase: 'FINISH', line: xxx }
 [ 0 ]
 `, 'readline js')
 

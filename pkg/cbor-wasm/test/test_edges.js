@@ -1,5 +1,6 @@
 import {Runner} from './utils.js'
-import {Decoder, Diagnose} from '../lib/cbor.js'
+import {fromBase64} from '../lib/utils.js'
+import {Decoder, Diagnose} from '../lib/cbor-wasm.js'
 import assert from 'assert'
 
 const BUA = globalThis.BigUint64Array
@@ -10,7 +11,6 @@ async function main() {
   const runner = new Runner()
 
   const d = new Decoder()
-  await d.init()
 
   runner.run(() => {
     // console.log's
@@ -24,7 +24,6 @@ async function main() {
     }
     res = x
   })
-  await e.init()
   runner.run(() => {
     res = NONE
     e.write('6161')
@@ -39,7 +38,7 @@ async function main() {
 
     res = NONE
     e.writeBuffer[0] = 0x5a
-    e.dv.setUint32(1, e.max * 2)
+    e.memDV.setUint32(e.parser + 1, e.max * 2)
     assert.deepEqual(e.write(null, 0, (e.max * 2) + 1), e.max)
     assert.deepEqual(res, NONE)
     e.reset()
@@ -57,7 +56,6 @@ async function main() {
   }, 'Throws on null buffer and end')
 
   const f = new Decoder({verbose: true})
-  await f.init()
   // console.log + verbose
   f.write('8180')
 
@@ -73,7 +71,6 @@ async function main() {
     },
     verbose: false
   })
-  await diag.init()
   for (const [hex, expected] of [
     ['818120', '[[-1]]'],
     ['1b0020000000000000', '9007199254740992'],
@@ -121,6 +118,12 @@ async function main() {
     assert.deepEqual(sd(big).length, bigsz, 'big')
   }, 'static decode')
 
+  runner.run(() => {
+    assert.deepEqual(fromBase64('Zm9v'), Buffer.from('foo'))
+    globalThis.atob = str => Buffer.from(str, 'base64').toString('binary')
+    assert.deepEqual(fromBase64('Zm9v'), Buffer.from('foo'))
+    delete globalThis.atob
+  })
   runner.summary()
 }
 

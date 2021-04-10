@@ -63,7 +63,6 @@ export class Decoder extends Parser {
    */
   constructor(opts) {
     super(opts)
-    this.stack = []
   }
 
   /**
@@ -77,9 +76,9 @@ export class Decoder extends Parser {
    * Convenience function for decoding single complete CBOR inputs.  You still
    * have to await this function for WASM setup, but the function it returns
    * is synchronous.
-   * @returns {Promise<DecoderFunction>}
+   * @returns {DecoderFunction}
    */
-  static async decoder() {
+  static decoder() {
     let res = NONE
     const d = new Decoder((er, x) => {
       if (er) {
@@ -87,7 +86,6 @@ export class Decoder extends Parser {
       }
       res = x
     })
-    await d.init()
 
     return inp => {
       try {
@@ -123,19 +121,18 @@ export class Decoder extends Parser {
   }
 
   _event(mt, bytes, phase, line) {
-    const val = this.baseEvent(mt, bytes, phase, line)
-    if (mt === this.mod.FAIL) {
-      this.opts.callback.call(
-        this,
-        new Error(`Parse failed, library.c:${val} at input char ${bytes}`)
-      )
-      return
-    }
     if (phase === PHASES.BETWEEN_ITEMS) {
       return
     }
+    const val = this.baseEvent(mt, bytes, phase, line)
     let ret = null
     switch (mt) {
+      case this.mod.FAIL:
+        this.opts.callback.call(
+          this,
+          new Error(`Parse failed, library.c:${val} at input char ${bytes}`)
+        )
+        return
       case MT.POS:
         ret = (val <= Number.MAX_SAFE_INTEGER) ? Number(val) : val
         break
@@ -151,7 +148,7 @@ export class Decoder extends Parser {
             if (bytes > 0) {
               const start = this.data + Number(val)
               this.stack[this.stack.length - 1].push(
-                this.mem.slice(start, start + bytes)
+                this.memU8.slice(start, start + bytes)
               )
             } else {
               // streaming mode
@@ -175,7 +172,7 @@ export class Decoder extends Parser {
             if (bytes > 0) {
               const start = this.data + Number(val)
               this.stack[this.stack.length - 1].push(
-                this.mem.slice(start, start + bytes)
+                this.memU8.slice(start, start + bytes)
               )
             } else {
               // streaming mode
@@ -299,11 +296,11 @@ export class Decoder extends Parser {
             break
           }
           case 4: {
-            ret = this.dv.getFloat32(0, true)
+            ret = this.memDV.getFloat32(this.parser, true)
             break
           }
           case 8: {
-            ret = this.dv.getFloat64(0, true)
+            ret = this.memDV.getFloat64(this.parser, true)
             break
           }
         }

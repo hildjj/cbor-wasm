@@ -45,7 +45,7 @@ export class Diagnose extends Parser {
             break
           case PHASES.AFTER_ITEM: {
             const start = this.data + Number(val)
-            ret = toHex(this.mem.slice(start, start + bytes))
+            ret = toHex(this.memU8.slice(start, start + bytes))
             break
           }
           case PHASES.FINISH:
@@ -64,7 +64,7 @@ export class Diagnose extends Parser {
           case PHASES.AFTER_ITEM: {
             const start = this.data + Number(val)
             // TODO: deal with multiple chunks
-            ret = this.td.decode(this.mem.slice(start, start + bytes))
+            ret = this.td.decode(this.memU8.slice(start, start + bytes))
             break
           }
           case PHASES.FINISH:
@@ -140,11 +140,11 @@ export class Diagnose extends Parser {
             break
           }
           case 4: {
-            num = this.dv.getFloat32(0, true)
+            num = this.memDV.getFloat32(this.parser, true)
             break
           }
           case 8: {
-            num = this.dv.getFloat64(0, true)
+            num = this.memDV.getFloat64(this.parser, true)
             break
           }
         }

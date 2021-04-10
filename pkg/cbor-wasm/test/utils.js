@@ -1,5 +1,5 @@
 import assert from 'assert'
-import {Decoder, Diagnose} from '../lib/cbor.js'
+import {Decoder, Diagnose} from '../lib/cbor-wasm.js'
 import util from 'util'
 
 export const NONE = Symbol('NONE')
@@ -31,20 +31,6 @@ export class TestParser {
     })
   }
 
-  async init() {
-    await this.decoder.init()
-    await this.diag.init()
-
-    // this is a hack to look at the current parser state.  it must
-    // be checked after write() returns, when you know a single complete
-    // item has been written.
-    this.parser_state = new DataView(
-      this.decoder.mod.memory.buffer,
-      this.decoder.parser + 8,
-      8
-    )
-  }
-
   diagnose(str) {
     this.str = ''
     const sz = this.diag.write(str)
@@ -68,8 +54,8 @@ export class TestParser {
       throw new Error('Unused data')
     }
     // make sure we don't have to call reset() after every item.
-    assert.equal(this.parser_state.getInt32(0, true), 8) // START
-    assert.equal(this.parser_state.getInt32(4, true), 0)
+    assert.equal(this.decoder.memDV.getInt32(this.decoder.parser + 8, true), 8) // START
+    assert.equal(this.decoder.memDV.getInt32(this.decoder.parser + 12, true), 0)
 
     return this.result
   }

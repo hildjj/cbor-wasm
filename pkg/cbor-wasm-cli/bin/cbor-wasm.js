@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { Decoder, Diagnose } from 'cbor-wasm'
-import { Command, Option } from 'commander'
+import { Decoder, Diagnose, Comment } from 'cbor-wasm'
+import { Command } from 'commander'
 import fs from 'fs'
 import util from 'util'
 
@@ -99,7 +99,6 @@ async function eachHex(d, files, opts) {
 }
 
 async function each(d, files, opts) {
-  await d.init()
   if (opts.hex) {
     await eachHex(d, files, opts)
   } else {
@@ -147,6 +146,25 @@ program
     if (!opts.hex || opts.verbose) {
       process.stdout.write('\n')
     }
+  })
+
+program
+  .command('comment [files...]')
+  .description('output the commented version of a CBOR item')
+  .action(async(files, opts, p) => {
+    opts = {...p.parent.opts(), ...opts}
+    const c = new Comment({
+      callback(er, x) {
+        if (er) {
+          throw er
+        } else {
+          process.stdout.write(x)
+        }
+      },
+      verbose: opts.verbose
+    })
+    opts.newline = false
+    await each(c, files, opts)
   })
 
 function main() {
